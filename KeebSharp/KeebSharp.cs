@@ -64,12 +64,25 @@ namespace KeebSharp
             }
         }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
+
         private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == Hooks.WM_KEYDOWN)
             {
                 var vkCode = Marshal.ReadInt32(lParam);
                 _logger.Info($"INFO: Key pressed. Virtual key code - '{vkCode}'.");
+
+                // Remap j to a
+                if (vkCode == 74)
+                {
+                    keybd_event(0x41, 0, 0, 0);
+                    keybd_event(0x41, 0, 2, 0);
+
+                    // Return 1 to say it's been handled
+                    return (IntPtr)1;
+                }
 
                 return User32.CallNextHookEx(_hookId, nCode, Hooks.WM_KEYDOWN, (IntPtr)vkCode);
             }
