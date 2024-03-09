@@ -39,7 +39,7 @@ namespace KeebSharp.Handlers
             [Keys.OemPeriod] = new[] { (Keys.Oem5, true) },
             [Keys.OemQuestion] = new[] { (Keys.Oem5, false) },
 
-            // Numpad left hand side
+            // Numpad left xcvsdfwer
             [Keys.X] = new[] { (Keys.NumPad1, false) },
             [Keys.C] = new[] { (Keys.NumPad2, false) },
             [Keys.V] = new[] { (Keys.NumPad3, false) },
