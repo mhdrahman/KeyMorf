@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+﻿using KeebSharp.Logging;
 
 namespace KeebSharp
 {
@@ -9,6 +6,8 @@ namespace KeebSharp
     {
         public static void Main(string[] args)
         {
+            var logger = new ConsoleLogger();
+            logger.Info("Starting KeebSharp...");
         }
     }
 }
