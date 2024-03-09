@@ -21,6 +21,6 @@ namespace KeebSharp.Interop
         public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
         [DllImport("user32.dll")]
-        public static extern short GetAsyncKeyState(int key);
+        public static extern short GetKeyState(int vKey);
     }
 }

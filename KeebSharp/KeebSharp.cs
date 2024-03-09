@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace KeebSharp
 {
@@ -20,6 +21,7 @@ namespace KeebSharp
         public static Dictionary<Keys, (Keys Key, bool Shift)[]> Mapping = new()
         {
             [Keys.J] = new[] { (Keys.N, true), (Keys.E, false), (Keys.W, false), (Keys.P, true), (Keys.A, false), (Keys.S, false), (Keys.S, false), (Keys.D1, false), (Keys.D2, false), (Keys.D3, false), (Keys.D1, true) },
+            [Keys.K] = new[] { (Keys.H, true), (Keys.E, false), (Keys.L, false), (Keys.L, false), (Keys.O, false) },
         };
 
         public static void Start()
@@ -81,6 +83,11 @@ namespace KeebSharp
 
                 if (Mapping.TryGetValue(inputKey, out var mappedKeys))
                 {
+                    if (IsKeyPressed(Keys.LShiftKey))
+                    {
+                        _logger.Info("Left shift pressed");
+                    }
+
                     _logger.Info($"Mapped key pressed {inputKey}.");
                     PressKeys(mappedKeys);
                     return Handled;
@@ -127,6 +134,11 @@ namespace KeebSharp
             }
 
             User32.keybd_event((byte)Keys.RShiftKey, 0, 2, 0);
+        }
+
+        private static bool IsKeyPressed(Keys key)
+        {
+            return (User32.GetKeyState((int)Keys.LShiftKey) & 0x8000) > 0;
         }
     }
 } 
