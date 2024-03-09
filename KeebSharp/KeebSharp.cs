@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Windows.Input;
 
 namespace KeebSharp
 {
@@ -17,12 +16,23 @@ namespace KeebSharp
 
         private static IntPtr Handled = new(1);
 
-        // TODO: obviously this doesn't work, just making a single key to a macro but wanna test...
-        public static Dictionary<Keys, (Keys Key, bool Shift)[]> Mapping = new()
+        private static Dictionary<Keys, (Keys Key, bool Shift)[]> Layer = new()
         {
-            [Keys.J] = new[] { (Keys.N, true), (Keys.E, false), (Keys.W, false), (Keys.P, true), (Keys.A, false), (Keys.S, false), (Keys.S, false), (Keys.D1, false), (Keys.D2, false), (Keys.D3, false), (Keys.D1, true) },
-            [Keys.K] = new[] { (Keys.H, true), (Keys.E, false), (Keys.L, false), (Keys.L, false), (Keys.O, false) },
+            [Keys.Y] = new[] { (Keys.D9, true) },
+            [Keys.U] = new[] { (Keys.D0, true) },
+            [Keys.I] = new[] { (Keys.OemOpenBrackets, true) },
+            [Keys.O] = new[] { (Keys.OemCloseBrackets, true) },
+            [Keys.P] = new[] { (Keys.OemOpenBrackets, false) },
+            [Keys.OemSemicolon] = new[] { (Keys.OemCloseBrackets, false) },
+            [Keys.H] = new[] { (Keys.Left, false) },
+            [Keys.J] = new[] { (Keys.Down, false) },
+            [Keys.K] = new[] { (Keys.Up, false) },
+            [Keys.L] = new[] { (Keys.Right, false) },
         };
+
+        private static Keys LayerToggleKey = Keys.A;
+        private static Stopwatch _toggleTimer = new Stopwatch();
+        private static bool _toggled = false;
 
         public static void Start()
         {
@@ -81,7 +91,30 @@ namespace KeebSharp
                 var vkCode = Marshal.ReadInt32(lParam);
                 var inputKey = (Keys)vkCode;
 
-                if (Mapping.TryGetValue(inputKey, out var mappedKeys))
+                if (inputKey == LayerToggleKey)
+                {
+                    if (!_toggleTimer.IsRunning)
+                    {
+                        _toggleTimer.Start();
+                        return User32.CallNextHookEx(_hookId, nCode, Hooks.WM_KEYDOWN, (IntPtr)vkCode);
+                    }
+
+                    if (_toggleTimer.ElapsedMilliseconds < 500)
+                    {
+                        _toggled = !_toggled;
+                        _logger.Info(_toggled ? "Layer toggled." : "Layer disabled.");
+                        _toggleTimer.Stop();
+                        _toggleTimer.Reset();
+                        return Handled;
+                    }
+                    else
+                    {
+                        _toggleTimer.Stop();
+                        _toggleTimer.Reset();
+                    }
+                }
+
+                if (_toggled && Layer.TryGetValue(inputKey, out var mappedKeys))
                 {
                     if (IsKeyPressed(Keys.LShiftKey))
                     {
