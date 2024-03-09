@@ -41,16 +41,18 @@ namespace KeebSharp
             if (_hookID == IntPtr.Zero)
             {
                 Console.WriteLine($"ERROR: {new Win32Exception(Marshal.GetLastWin32Error())}");
-                return;
+                Environment.Exit(-1);
             }
 
+            Console.CancelKeyPress += (_, _) =>
+            {
+                Application.Exit();
+                UnhookWindowsHookEx(_hookID);
+                Environment.Exit(0);
+            };
+
+            Console.WriteLine("KeebSharp is running. Press <C-c> to exit.");
             Application.Run();
-
-            Console.WriteLine("KeebSharp is running. Press the Enter key to exit.");
-            Console.ReadLine();
-
-            // Unhook the hook before exiting
-            UnhookWindowsHookEx(_hookID);
         }
 
         private static IntPtr SetHook(HookProc proc)
@@ -93,8 +95,8 @@ namespace KeebSharp
 
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
-                int vkCode = Marshal.ReadInt32(lParam);
-                File.WriteAllText($"{DataDirecory}/{Guid.NewGuid()}.txt", vkCode.ToString());
+                var vkCode = Marshal.ReadInt32(lParam);
+                Console.WriteLine($"INFO: Virtual key code - '{vkCode}'.");
 
                 return CallNextHookEx(_hookID, nCode, (IntPtr)WM_KEYDOWN, (IntPtr)vkCode);
             }
