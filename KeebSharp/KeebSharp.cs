@@ -13,6 +13,8 @@ namespace KeebSharp
         private static ConsoleLogger _logger = new ConsoleLogger();
         private static IntPtr _hookId = IntPtr.Zero;
 
+        private static IntPtr Handled = new(1);
+
         public static void Start()
         {
             _hookId = SetKeyboardHook();
@@ -64,30 +66,29 @@ namespace KeebSharp
             }
         }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
-
         private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == Hooks.WM_KEYDOWN)
             {
                 var vkCode = Marshal.ReadInt32(lParam);
-                _logger.Info($"INFO: Key pressed. Virtual key code - '{vkCode}'.");
+                var key = (Keys)vkCode;
 
-                // Remap j to a
-                if (vkCode == 74)
-                {
-                    keybd_event(0x41, 0, 0, 0);
-                    keybd_event(0x41, 0, 2, 0);
+                _logger.Info($"Key pressed {key}");
 
-                    // Return 1 to say it's been handled
-                    return (IntPtr)1;
-                }
-
+                // After we do our bit, let the key be processed as normal
                 return User32.CallNextHookEx(_hookId, nCode, Hooks.WM_KEYDOWN, (IntPtr)vkCode);
             }
 
             return User32.CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        private static void SendKeys(params Keys[] keys)
+        {
+            foreach (var key in keys)
+            {
+                User32.keybd_event((byte)key, 0, 0, 0);
+                User32.keybd_event((byte)key, 0, 2, 0);
+            }
         }
     }
 }
