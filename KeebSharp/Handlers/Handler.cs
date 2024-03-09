@@ -1,4 +1,5 @@
-﻿using KeebSharp.Interop;
+﻿using KeebSharp.Input;
+using KeebSharp.Interop;
 using KeebSharp.Logging;
 using System;
 using System.Collections.Generic;
@@ -95,54 +96,13 @@ namespace KeebSharp.Handlers
 
                 if (LayerActive && Layer.TryGetValue(inputKey, out var mappedKeys))
                 {
-                    PressKeys(mappedKeys);
+                    Keyboard.Press(mappedKeys);
                     return true;
                 }
             }
 
             // Let all unhandled keys be processes normally
             return false;
-        }
-
-        private static void PressKeys(params (Keys Key, bool Shift)[] keys)
-        {
-            foreach (var key in keys)
-            {
-                PressKey(key.Key, key.Shift);
-            }
-        }
-
-        private static void PressKey(Keys key, bool shift)
-        {
-            HoldShift(shift);
-            User32.keybd_event((byte)key, 0, 0, 0);
-            User32.keybd_event((byte)key, 0, 2, 0);
-            ReleaseShift(shift);
-        }
-
-        private static void HoldShift(bool shift)
-        {
-            if (!shift)
-            {
-                return;
-            }
-
-            User32.keybd_event((byte)Keys.RShiftKey, 0, 0, 0);
-        }
-
-        private static void ReleaseShift(bool shift)
-        {
-            if (!shift)
-            {
-                return;
-            }
-
-            User32.keybd_event((byte)Keys.RShiftKey, 0, 2, 0);
-        }
-
-        private static bool KeyHeld(Keys key)
-        {
-            return (User32.GetKeyState((int)key) & 0x8000) > 0;
         }
     }
 }
