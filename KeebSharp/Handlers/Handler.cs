@@ -11,8 +11,9 @@ namespace KeebSharp.Handlers
     internal class Handler
     {
         private static Keys LayerToggleKey = Keys.A;
-        private static Stopwatch _toggleTimer = new Stopwatch();
-        private static bool _toggled = false;
+        private static bool KeyUpSeen = true;
+        private static Stopwatch Timer = new Stopwatch();
+        private static bool LayerToggled = false;
 
         private static Dictionary<Keys, (Keys Key, bool Shift)[]> Layer = new()
         {
@@ -30,61 +31,41 @@ namespace KeebSharp.Handlers
 
 
         private readonly ConsoleLogger _logger;
-        private readonly IntPtr _hookId;
 
-        public Handler(ConsoleLogger logger, IntPtr hookId)
+        public Handler(ConsoleLogger logger)
         {
             _logger = logger;
-            _hookId = hookId;
         }
 
         public bool Handle(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == Hooks.WM_KEYDOWN)
+            if (nCode < 0)
             {
-                var vkCode = Marshal.ReadInt32(lParam);
-                var inputKey = (Keys)vkCode;
-
-                if (inputKey == LayerToggleKey)
-                {
-                    if (!_toggleTimer.IsRunning)
-                    {
-                        _toggleTimer.Start();
-                        return false;
-                    }
-
-                    if (_toggleTimer.ElapsedMilliseconds < 500)
-                    {
-                        _toggled = !_toggled;
-                        _logger.Info(_toggled ? "Layer toggled." : "Layer disabled.");
-                        _toggleTimer.Stop();
-                        _toggleTimer.Reset();
-                        return true;
-                    }
-                    else
-                    {
-                        _toggleTimer.Stop();
-                        _toggleTimer.Reset();
-                    }
-                }
-
-                if (_toggled && Layer.TryGetValue(inputKey, out var mappedKeys))
-                {
-                    if (IsKeyPressed(Keys.LShiftKey))
-                    {
-                        _logger.Info("Left shift pressed");
-                    }
-
-                    _logger.Info($"Mapped key pressed {inputKey}.");
-                    PressKeys(mappedKeys);
-                    return true;
-                }
-
-                // For any unmapped keys, let the key be processed as normal
                 return false;
             }
 
+            var vkCode = Marshal.ReadInt32(lParam);
+            var inputKey = (Keys)vkCode;
 
+            if (wParam == Constants.WM_KEYUP)
+            {
+                _logger.Debug($"Key up: {inputKey}");
+                if (inputKey == LayerToggleKey)
+                {
+                }
+            }
+
+            if (wParam == Constants.WM_KEYDOWN)
+            {
+                _logger.Debug($"Key down: {inputKey}");
+                if (inputKey == LayerToggleKey)
+                {
+                    // Hold back the key for now
+                    return true;
+                }
+            }
+
+            // Let all unhandled keys be processes normally
             return false;
         }
 
@@ -124,9 +105,9 @@ namespace KeebSharp.Handlers
             User32.keybd_event((byte)Keys.RShiftKey, 0, 2, 0);
         }
 
-        private static bool IsKeyPressed(Keys key)
+        private static bool KeyHeld(Keys key)
         {
-            return (User32.GetKeyState((int)Keys.LShiftKey) & 0x8000) > 0;
+            return (User32.GetKeyState((int)key) & 0x8000) > 0;
         }
     }
 }

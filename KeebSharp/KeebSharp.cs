@@ -13,7 +13,7 @@ namespace KeebSharp
     {
         private static IntPtr _hookId = IntPtr.Zero;
         private static ConsoleLogger _logger = new ConsoleLogger();
-        private static Handler? _handler;
+        private static Handler _handler = new Handler(_logger);
 
         private static IntPtr Handled = new(1);
 
@@ -36,7 +36,6 @@ namespace KeebSharp
             };
 
             _logger.Info("KeebSharp is running. Press <C-c> to exit.");
-            _handler = new Handler(_logger, _hookId);
             Application.Run();
         }
 
@@ -64,7 +63,7 @@ namespace KeebSharp
                     return IntPtr.Zero;
                 }
 
-                return User32.SetWindowsHookEx((int)Hooks.WH_KEYBOARD_LL, KeyboardHookCallback, Kernel32.GetModuleHandle(module.ModuleName), 0);
+                return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHookCallback, Kernel32.GetModuleHandle(module.ModuleName), 0);
             }
         }
 

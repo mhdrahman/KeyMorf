@@ -4,11 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace KeebSharp.Logging
 {
-    public class ConsoleLogger
+    internal class ConsoleLogger
     {
+        // TODO accept a log level in the constructor and respect it
+        public enum LogLevel { Info, Debug, Warn, Error }
+
         public void Info(string message)
         {
             Console.WriteLine($"INFO:  {message}");
+        }
+
+        public void Debug(string message)
+        {
+            Console.WriteLine($"DEBUG: {message}");
         }
 
         public void Warn(string message)
