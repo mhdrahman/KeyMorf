@@ -63,11 +63,11 @@ namespace KeebSharp
                     return IntPtr.Zero;
                 }
 
-                return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHookCallback, Kernel32.GetModuleHandle(module.ModuleName), 0);
+                return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHook, Kernel32.GetModuleHandle(module.ModuleName), 0);
             }
         }
 
-        private static IntPtr KeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
             // _handler won't be null here because it's set in the Start function
             var handled = _handler!.Handle(nCode, wParam, lParam);

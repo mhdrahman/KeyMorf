@@ -2,7 +2,6 @@
 using KeebSharp.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -10,10 +9,10 @@ namespace KeebSharp.Handlers
 {
     internal class Handler
     {
-        private static Keys LayerToggleKey = Keys.A;
+        private static Keys LayerToggleKey = Keys.Z;
+        private static bool LayerActive = false;
         private static bool KeyUpSeen = true;
-        private static Stopwatch Timer = new Stopwatch();
-        private static bool LayerToggled = false;
+        private static System.Threading.Timer? Timer;
 
         private static Dictionary<Keys, (Keys Key, bool Shift)[]> Layer = new()
         {
@@ -27,6 +26,11 @@ namespace KeebSharp.Handlers
             [Keys.J] = new[] { (Keys.Down, false) },
             [Keys.K] = new[] { (Keys.Up, false) },
             [Keys.L] = new[] { (Keys.Right, false) },
+            [Keys.N] = new[] { (Keys.D1, true) },
+            [Keys.M] = new[] { (Keys.Oemplus, false) },
+            [Keys.Oemcomma] = new[] { (Keys.D7, true) },
+            [Keys.OemPeriod] = new[] { (Keys.Oem5, true) },
+            [Keys.OemQuestion] = new[] { (Keys.Oem5, false) },
         };
 
 
@@ -47,20 +51,51 @@ namespace KeebSharp.Handlers
             var vkCode = Marshal.ReadInt32(lParam);
             var inputKey = (Keys)vkCode;
 
+            // Key up events
             if (wParam == Constants.WM_KEYUP)
             {
-                _logger.Debug($"Key up: {inputKey}");
                 if (inputKey == LayerToggleKey)
                 {
+                    KeyUpSeen = true;
+                    if (LayerActive)
+                    {
+                        LayerActive = false;
+                        _logger.Info("Layer inactive.");
+                    }
                 }
             }
 
+            // Key down events
             if (wParam == Constants.WM_KEYDOWN)
             {
-                _logger.Debug($"Key down: {inputKey}");
+                _logger.Debug(inputKey.ToString());
                 if (inputKey == LayerToggleKey)
                 {
+                    KeyUpSeen = false;
+                    void TimerHook(object? state)
+                    {
+                        // If the key has not been released when the timer expires, toggle the layer
+                        if (!KeyUpSeen)
+                        {
+                            _logger.Info("Layer active.");
+                            LayerActive = true;
+                        }
+
+                        Timer!.Dispose();
+                    }
+
+                    if (!LayerActive)
+                    {
+                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(500), TimeSpan.Zero);
+                    }
+
                     // Hold back the key for now
+                    return true;
+                }
+
+                if (LayerActive && Layer.TryGetValue(inputKey, out var mappedKeys))
+                {
+                    PressKeys(mappedKeys);
                     return true;
                 }
             }
