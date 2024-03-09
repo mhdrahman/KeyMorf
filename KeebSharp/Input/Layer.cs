@@ -9,10 +9,10 @@ namespace KeebSharp.Input
 
         public Keys ToggleKey { get; set; }
 
-        public bool Active { get; set; };
+        public bool Active { get; set; }
 
         public bool ToggleKeyDisabled { get; set; }
 
-        public Dictionary<Keys, Keys[]>? Mappings { get; set; }
+        public Dictionary<Keys, (Keys Key, bool Shift)[]>? Mappings { get; set; }
     }
 }
