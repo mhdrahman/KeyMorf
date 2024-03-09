@@ -18,21 +18,37 @@ namespace KeebSharp.Handlers
 
         private static Dictionary<Keys, (Keys Key, bool Shift)[]> Layer = new()
         {
+            // Brackets yuiop;
             [Keys.Y] = new[] { (Keys.D9, true) },
             [Keys.U] = new[] { (Keys.D0, true) },
             [Keys.I] = new[] { (Keys.OemOpenBrackets, true) },
             [Keys.O] = new[] { (Keys.OemCloseBrackets, true) },
             [Keys.P] = new[] { (Keys.OemOpenBrackets, false) },
             [Keys.OemSemicolon] = new[] { (Keys.OemCloseBrackets, false) },
+
+            // Arrow keys hjkl
             [Keys.H] = new[] { (Keys.Left, false) },
             [Keys.J] = new[] { (Keys.Down, false) },
             [Keys.K] = new[] { (Keys.Up, false) },
             [Keys.L] = new[] { (Keys.Right, false) },
+
+            // Logical operators nm,./
             [Keys.N] = new[] { (Keys.D1, true) },
             [Keys.M] = new[] { (Keys.Oemplus, false) },
             [Keys.Oemcomma] = new[] { (Keys.D7, true) },
             [Keys.OemPeriod] = new[] { (Keys.Oem5, true) },
             [Keys.OemQuestion] = new[] { (Keys.Oem5, false) },
+
+            // Numpad left hand side
+            [Keys.X] = new[] { (Keys.NumPad1, false) },
+            [Keys.C] = new[] { (Keys.NumPad2, false) },
+            [Keys.V] = new[] { (Keys.NumPad3, false) },
+            [Keys.S] = new[] { (Keys.NumPad4, false) },
+            [Keys.D] = new[] { (Keys.NumPad5, false) },
+            [Keys.F] = new[] { (Keys.NumPad6, false) },
+            [Keys.W] = new[] { (Keys.NumPad7, false) },
+            [Keys.E] = new[] { (Keys.NumPad8, false) },
+            [Keys.R] = new[] { (Keys.NumPad9, false) },
         };
 
         private readonly ConsoleLogger _logger;
