@@ -20,8 +20,7 @@ namespace KeebSharp
             _hookId = SetKeyboardHook();
             if (_hookId == IntPtr.Zero)
             {
-                // TODO: Method for logging Win32 error
-                _logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
+                _logger.Win32();
                 Environment.Exit(-1);
             }
 
@@ -80,15 +79,6 @@ namespace KeebSharp
             }
 
             return User32.CallNextHookEx(_hookId, nCode, wParam, lParam);
-        }
-
-        private static void SendKeys(params Keys[] keys)
-        {
-            foreach (var key in keys)
-            {
-                User32.keybd_event((byte)key, 0, 0, 0);
-                User32.keybd_event((byte)key, 0, 2, 0);
-            }
         }
     }
 }
