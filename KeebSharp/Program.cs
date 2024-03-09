@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace KeebSharp
 {
@@ -42,6 +43,8 @@ namespace KeebSharp
                 Console.WriteLine($"ERROR: {new Win32Exception(Marshal.GetLastWin32Error())}");
                 return;
             }
+
+            Application.Run();
 
             Console.WriteLine("KeebSharp is running. Press the Enter key to exit.");
             Console.ReadLine();
