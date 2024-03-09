@@ -12,6 +12,7 @@ namespace KeebSharp.Handlers
     {
         private static Keys LayerToggleKey = Keys.Z;
         private static bool LayerToggleKeyHeld = true;
+        private static bool LayerToggleKeyDisabled = false;
         private static bool LayerActive = false;
         private static System.Threading.Timer? Timer;
 
@@ -57,27 +58,39 @@ namespace KeebSharp.Handlers
                 if (inputKey == LayerToggleKey)
                 {
                     LayerToggleKeyHeld = false;
-                    LayerActive = false;
+                    if (LayerActive)
+                    {
+                        LayerActive = false;
+                        _logger.Info("Layer inactive.");
+                    }    
                 }
             }
 
             // Key down events
             if (wParam == Constants.WM_KEYDOWN)
             {
-                _logger.Debug(inputKey.ToString());
                 if (inputKey == LayerToggleKey)
                 {
+                    if (LayerToggleKeyDisabled)
+                    {
+                        LayerToggleKeyDisabled = false;
+                        return false;
+                    }
+
                     LayerToggleKeyHeld = true;
                     void TimerHook(object? state)
                     {
-                        // If the key has not been released when the timer expires, toggle the layer
                         if (LayerToggleKeyHeld)
                         {
+                            // If the key has not been released when the timer expires, toggle the layer
                             LayerActive = true;
+                            _logger.Info("Layer active.");
                         }
                         else
                         {
-                            Keyboard.KeyUp(LayerToggleKey);
+                            // Otherwise, let the key through
+                            LayerToggleKeyDisabled = true;
+                            Keyboard.Press(LayerToggleKey, false);
                         }
 
                         Timer!.Dispose();
@@ -86,7 +99,7 @@ namespace KeebSharp.Handlers
                     if (!LayerActive)
                     {
                         // TODO: maybe wrap up the timer, so don't have to look at ugly full namespace
-                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(500), TimeSpan.Zero);
+                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.Zero);
                     }
 
                     // Hold back the key for now
