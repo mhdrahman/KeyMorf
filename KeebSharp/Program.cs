@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Text.Json;
 
 namespace KeebSharp
 {
@@ -36,14 +36,17 @@ namespace KeebSharp
             Console.CancelKeyPress += (_, _) =>
             {
                 _logger.Info("KeebSharp is exiting. Please wait...");
-
-                Application.Exit();
-                User32.UnhookWindowsHookEx(_hookId);
-                Environment.Exit(0);
+                Exit(0);
             };
 
             _logger.Info("KeebSharp is running. Press <C-c> to exit.");
-            Application.Run();
+
+            var message = new User32.Message();
+            while (User32.GetMessage(ref message, IntPtr.Zero, 0, 0))
+            {
+                _logger.Error($"Recieved a message unexpectedly: {JsonSerializer.Serialize(message)}. Exiting...");
+                Exit(-1);
+            }
         }
 
         /// <summary>
@@ -85,7 +88,6 @@ namespace KeebSharp
         /// contains valid data. A value of 0 indicates valid data.</param>
         /// <param name="wParam">Event type.</param>
         /// <param name="lParam">Virtual key code of the key associated with the event.</param>
-        /// <returns></returns>
         private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode < 0)
@@ -104,6 +106,16 @@ namespace KeebSharp
 
             // For any unhandled keys, let the key be processed as normal
             return User32.CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        /// <summary>
+        /// Exit the application with the specified <paramref name="exitCode"/>.
+        /// </summary>
+        /// <param name="exitCode">The exit code for the process.</param>
+        private static void Exit(int exitCode)
+        {
+            User32.UnhookWindowsHookEx(_hookId);
+            Environment.Exit(exitCode);
         }
     }
 } 

@@ -5,6 +5,24 @@ namespace KeebSharp.Interop
 {
     internal static class User32
     {
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Point
+        {
+            public long x;
+            public long y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Message
+        {
+            public IntPtr hwnd;
+            public uint message;
+            public UIntPtr wParam;
+            public IntPtr lParam;
+            public uint time;
+            public Point pt;
+        }
+
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -22,5 +40,8 @@ namespace KeebSharp.Interop
 
         [DllImport("user32.dll")]
         public static extern short GetKeyState(int vKey);
+
+        [DllImport("user32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern bool GetMessage(ref Message message, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
     }
 }
