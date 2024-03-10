@@ -11,7 +11,6 @@ namespace KeebSharp.Input
             ToggleKey = Keys.Z,
             ToggleKeyHeld = false,
             ToggleKeyDisabled = false,
-            Active = false,
             Mappings = new()
             {
                 // Brackets yuiop;
@@ -54,7 +53,6 @@ namespace KeebSharp.Input
             ToggleKey = Keys.Q,
             ToggleKeyHeld = false,
             ToggleKeyDisabled = false,
-            Active = false,
             Mappings = new()
             {
                 [Keys.J] = new[] { (Keys.K, true), (Keys.E, false), (Keys.E, false), (Keys.B, false), (Keys.S, true), (Keys.H, false), (Keys.A, false), (Keys.R, false), (Keys.P, false) },
