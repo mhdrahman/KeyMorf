@@ -10,6 +10,9 @@ namespace KeebSharp.Interop
 
         [StructLayout(LayoutKind.Sequential)]
         public struct Message { public IntPtr hwnd; public uint message; public UIntPtr wParam; public IntPtr lParam; public uint time; public Point pt; }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct HookStruct { public uint vkCode; public uint scanCode; public uint flags; public uint time; public IntPtr dwExtraInfo; }
 
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
