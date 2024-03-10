@@ -5,7 +5,7 @@ namespace KeebSharp.Input
 {
     internal static class KeyMap
     {
-        private static Layer LayerOne = new Layer
+        private static readonly Layer LayerOne = new()
         {
             Name = "Symbols",
             ToggleKey = Keys.Z,
@@ -13,7 +13,7 @@ namespace KeebSharp.Input
             ToggleKeyDisabled = false,
             Mappings = new()
             {
-                // Brackets yuiop;
+                // Brackets yuiop
                 [Keys.Y] = new[] { (Keys.D9, true) },
                 [Keys.U] = new[] { (Keys.D0, true) },
                 [Keys.I] = new[] { (Keys.OemOpenBrackets, true) },
@@ -47,7 +47,7 @@ namespace KeebSharp.Input
             },
         };
 
-        private static Layer LayerTwo = new Layer
+        private static readonly Layer LayerTwo = new() 
         {
             Name = "Macros",
             ToggleKey = Keys.Q,
@@ -59,7 +59,7 @@ namespace KeebSharp.Input
             },
         };
 
-        public static Layer Base = new Layer
+        public static readonly Layer Base = new()
         {
             Name = "Base",
             Mappings = new()
@@ -68,7 +68,7 @@ namespace KeebSharp.Input
             },
         };
 
-        public static readonly Dictionary<Keys, Layer> Layers = new Dictionary<Keys, Layer>
+        public static readonly Dictionary<Keys, Layer> Layers = new()
         {
             [LayerOne.ToggleKey] = LayerOne,
             [LayerTwo.ToggleKey] = LayerTwo,

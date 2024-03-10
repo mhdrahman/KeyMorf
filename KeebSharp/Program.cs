@@ -12,19 +12,19 @@ namespace KeebSharp
     /// <summary>
     /// Contains the startup and run logic for KeyMorf.
     /// </summary>
-    public class Program
+    public static class Program
     {
         private static IntPtr _hookId = IntPtr.Zero;
-        private static ConsoleLogger _logger = new ConsoleLogger(LogLevel.Debug);
-        private static Handler _handler = new Handler(_logger);
+        private static readonly ConsoleLogger _logger = new(LogLevel.Debug);
+        private static readonly Handler _handler = new(_logger);
 
         // Constant value which indicates that an event was handled.
-        private static IntPtr Handled = new(1);
+        private static readonly IntPtr Handled = new(1);
 
         /// <summary>
         /// Entry point for the application.
         /// </summary>
-        public static void Main(string[] args)
+        public static void Main()
         {
             _hookId = SetKeyboardHook();
             if (_hookId == IntPtr.Zero)
@@ -53,30 +53,29 @@ namespace KeebSharp
         /// Returns IntPtr.Zero if an error occured while installing the hook.</returns>
         private static IntPtr SetKeyboardHook()
         {
-            using (var process = Process.GetCurrentProcess())
-            using (var module = process.MainModule)
+            using var process = Process.GetCurrentProcess();
+            using var module = process.MainModule;
+
+            if (module == null)
             {
-                if (module == null)
-                {
-                    _logger.Error($"{nameof(module)} was null.");
-                    return IntPtr.Zero;
-                }
-
-                if (module.ModuleName == null)
-                {
-                    _logger.Error($"{nameof(module.ModuleName)} was null.");
-                    return IntPtr.Zero;
-                }
-
-                var moduleHandle = Kernel32.GetModuleHandle(module.ModuleName);
-                if (moduleHandle == IntPtr.Zero)
-                {
-                    _logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
-                    return IntPtr.Zero;
-                }
-
-                return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHook, Kernel32.GetModuleHandle(module.ModuleName), 0);
+                _logger.Error($"{nameof(module)} was null.");
+                return IntPtr.Zero;
             }
+
+            if (module.ModuleName == null)
+            {
+                _logger.Error($"{nameof(module.ModuleName)} was null.");
+                return IntPtr.Zero;
+            }
+
+            var moduleHandle = Kernel32.GetModuleHandle(module.ModuleName);
+            if (moduleHandle == IntPtr.Zero)
+            {
+                _logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
+                return IntPtr.Zero;
+            }
+
+            return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHook, Kernel32.GetModuleHandle(module.ModuleName), 0);
         }
 
         /// <summary>
