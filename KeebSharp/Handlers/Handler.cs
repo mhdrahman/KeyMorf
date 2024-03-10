@@ -10,9 +10,9 @@ namespace KeebSharp.Handlers
 {
     internal class Handler
     {
-        private static System.Threading.Timer? Timer;
-        private static Layer? ActiveLayer;
-        private static Layer LayerOne = new Layer
+        private System.Threading.Timer? Timer;
+        private Layer? ActiveLayer;
+        private readonly Layer LayerOne = new Layer
         {
             Name = "Symbols",
             ToggleKey = Keys.Z,
@@ -55,7 +55,7 @@ namespace KeebSharp.Handlers
             },
         };
 
-        private static Layer LayerTwo = new Layer
+        private readonly Layer LayerTwo = new Layer
         {
             Name = "Macros",
             ToggleKey = Keys.Q,
@@ -68,7 +68,7 @@ namespace KeebSharp.Handlers
             },
         };
 
-        private static Dictionary<Keys, Layer> Layers = new Dictionary<Keys, Layer>
+        private readonly Dictionary<Keys, Layer> Layers = new Dictionary<Keys, Layer>
         {
             [LayerOne.ToggleKey] = LayerOne,
             [LayerTwo.ToggleKey] = LayerTwo,
