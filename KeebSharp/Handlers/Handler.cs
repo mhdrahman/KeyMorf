@@ -10,51 +10,14 @@ namespace KeebSharp.Handlers
 {
     internal class Handler
     {
-        private static Keys LayerToggleKey = Keys.Z;
-        private static bool LayerToggleKeyHeld = true;
-        private static bool LayerToggleKeyDisabled = false;
-        private static bool LayerActive = false;
         private static System.Threading.Timer? Timer;
-
-        private static Dictionary<Keys, (Keys Key, bool Shift)[]> Layer = new()
-        {
-            // Brackets yuiop;
-            [Keys.Y] = new[] { (Keys.D9, true) },
-            [Keys.U] = new[] { (Keys.D0, true) },
-            [Keys.I] = new[] { (Keys.OemOpenBrackets, true) },
-            [Keys.O] = new[] { (Keys.OemCloseBrackets, true) },
-            [Keys.P] = new[] { (Keys.OemOpenBrackets, false) },
-            [Keys.OemSemicolon] = new[] { (Keys.OemCloseBrackets, false) },
-
-            // Arrow keys hjkl
-            [Keys.H] = new[] { (Keys.Left, false) },
-            [Keys.J] = new[] { (Keys.Down, false) },
-            [Keys.K] = new[] { (Keys.Up, false) },
-            [Keys.L] = new[] { (Keys.Right, false) },
-
-            // Logical operators nm,./
-            [Keys.N] = new[] { (Keys.D1, true) },
-            [Keys.M] = new[] { (Keys.Oemplus, false) },
-            [Keys.Oemcomma] = new[] { (Keys.D7, true) },
-            [Keys.OemPeriod] = new[] { (Keys.Oem5, true) },
-            [Keys.OemQuestion] = new[] { (Keys.Oem5, false) },
-
-            // Numpad left xcvsdfwer
-            [Keys.X] = new[] { (Keys.NumPad1, false) },
-            [Keys.C] = new[] { (Keys.NumPad2, false) },
-            [Keys.V] = new[] { (Keys.NumPad3, false) },
-            [Keys.S] = new[] { (Keys.NumPad4, false) },
-            [Keys.D] = new[] { (Keys.NumPad5, false) },
-            [Keys.F] = new[] { (Keys.NumPad6, false) },
-            [Keys.W] = new[] { (Keys.NumPad7, false) },
-            [Keys.E] = new[] { (Keys.NumPad8, false) },
-            [Keys.R] = new[] { (Keys.NumPad9, false) },
-        };
-
+        private static Layer? ActiveLayer;
         private static Layer LayerOne = new Layer
         {
-            Id = 1,
+            Name = "Symbols",
             ToggleKey = Keys.Z,
+            ToggleKeyHeld = false,
+            ToggleKeyDisabled = false,
             Active = false,
             Mappings = new()
             {
@@ -94,14 +57,14 @@ namespace KeebSharp.Handlers
 
         private static Layer LayerTwo = new Layer
         {
-            Id = 2,
+            Name = "Macros",
             ToggleKey = Keys.Q,
+            ToggleKeyHeld = false,
+            ToggleKeyDisabled = false,
             Active = false,
             Mappings = new()
             {
-                [Keys.J] = new[] { (Keys.H, true), (Keys.E, false), (Keys.L, false), (Keys.L, false), (Keys.O, false), (Keys.Oemcomma, false), (Keys.Space, false) },
-                [Keys.K] = new[] { (Keys.W, true), (Keys.O, false), (Keys.R, false), (Keys.L, false), (Keys.D, false) },
-                [Keys.K] = new[] { (Keys.D1, true) },
+                [Keys.J] = new[] { (Keys.K, true), (Keys.E, false), (Keys.E, false), (Keys.B, false), (Keys.S, true), (Keys.H, false), (Keys.A, false), (Keys.R, false), (Keys.P, false) },
             },
         };
 
@@ -131,13 +94,14 @@ namespace KeebSharp.Handlers
             // Key up events
             if (wParam == Constants.WM_KEYUP)
             {
-                if (inputKey == LayerToggleKey)
+                if (Layers.TryGetValue(inputKey, out var layer))
                 {
-                    LayerToggleKeyHeld = false;
-                    if (LayerActive)
+                    layer.ToggleKeyHeld = false;
+                    if (layer.Active)
                     {
-                        LayerActive = false;
-                        _logger.Info("Layer inactive.");
+                        layer.Active = false;
+                        ActiveLayer = null;
+                        _logger.Info($"{layer.Name} layer inactive.");
                     }    
                 }
             }
@@ -145,44 +109,45 @@ namespace KeebSharp.Handlers
             // Key down events
             if (wParam == Constants.WM_KEYDOWN)
             {
-                if (inputKey == LayerToggleKey)
+                if (Layers.TryGetValue(inputKey, out var layer))
                 {
-                    if (LayerToggleKeyDisabled)
+                    if (layer.ToggleKeyDisabled)
                     {
-                        LayerToggleKeyDisabled = false;
+                        layer.ToggleKeyDisabled = false;
                         return false;
                     }
 
-                    LayerToggleKeyHeld = true;
+                    layer.ToggleKeyHeld = true;
                     void TimerHook(object? state)
                     {
-                        if (LayerToggleKeyHeld)
+                        if (layer.ToggleKeyHeld)
                         {
                             // If the key has not been released when the timer expires, toggle the layer
-                            LayerActive = true;
-                            _logger.Info("Layer active.");
+                            layer.Active = true;
+                            ActiveLayer = layer;
+                            _logger.Info($"{layer.Name} layer active.");
                         }
                         else
                         {
                             // Otherwise, let the key through
-                            LayerToggleKeyDisabled = true;
-                            Keyboard.Press(LayerToggleKey, false);
+                            layer.ToggleKeyDisabled = true;
+                            Keyboard.Press(layer.ToggleKey, false);
                         }
 
                         Timer!.Dispose();
                     }
 
-                    if (!LayerActive)
+                    if (!layer.Active)
                     {
                         // TODO: maybe wrap up the timer, so don't have to look at ugly full namespace
                         Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.Zero);
                     }
 
-                    // Hold back the key for now
+                    // Hold back the key for now, if it doesn't toggle a layer it will be let through 
                     return true;
                 }
 
-                if (LayerActive && Layer.TryGetValue(inputKey, out var mappedKeys))
+                if (ActiveLayer != null && ActiveLayer.Active && ActiveLayer.Mappings!.TryGetValue(inputKey, out var mappedKeys))
                 {
                     Keyboard.Press(mappedKeys);
                     return true;

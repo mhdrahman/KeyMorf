@@ -5,9 +5,11 @@ namespace KeebSharp.Input
 {
     public class Layer
     {
-        public int Id { get; set; }
+        public string? Name { get; set; }
 
         public Keys ToggleKey { get; set; }
+
+        public bool ToggleKeyHeld { get; set; }
 
         public bool Active { get; set; }
 
