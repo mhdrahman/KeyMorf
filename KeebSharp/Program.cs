@@ -15,7 +15,7 @@ namespace KeebSharp
     public static class Program
     {
         private static IntPtr _hookId = IntPtr.Zero;
-        private static readonly ConsoleLogger _logger = new(LogLevel.Debug);
+        private static readonly ConsoleLogger _logger = new(LogLevel.Info);
         private static readonly Handler _handler = new(_logger);
 
         // Constant value which indicates that an event was handled.
