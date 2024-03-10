@@ -21,11 +21,6 @@ namespace KeebSharp.Input
             ReleaseShift(shift);
         }
 
-        public static void KeyUp(Keys key)
-        {
-            User32.keybd_event((byte)key, 0, 2, 0);
-        }
-
         public static bool KeyHeld(Keys key)
         {
             return (User32.GetKeyState((int)key) & 0x8000) > 0;

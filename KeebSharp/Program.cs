@@ -69,8 +69,15 @@ namespace KeebSharp
 
         private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            if (nCode < 0)
+            {
+                // Never seen this happen before...
+                _logger.Warn($"{nameof(nCode)} was less than zero");
+                return User32.CallNextHookEx(_hookId, nCode, wParam, lParam);
+            }
+
             // _handler won't be null here because it's set in the Start function
-            var handled = _handler!.Handle(nCode, wParam, lParam);
+            var handled = _handler!.Handle(wParam, lParam);
             if (handled)
             {
                 return Handled;

@@ -12,7 +12,7 @@ namespace KeebSharp.Handlers
     {
         private System.Threading.Timer? Timer;
         private Layer? ActiveLayer;
-        private readonly Layer LayerOne = new Layer
+        private static Layer LayerOne = new Layer
         {
             Name = "Symbols",
             ToggleKey = Keys.Z,
@@ -55,7 +55,7 @@ namespace KeebSharp.Handlers
             },
         };
 
-        private readonly Layer LayerTwo = new Layer
+        private static Layer LayerTwo = new Layer
         {
             Name = "Macros",
             ToggleKey = Keys.Q,
@@ -81,13 +81,8 @@ namespace KeebSharp.Handlers
             _logger = logger;
         }
 
-        public bool Handle(int nCode, IntPtr wParam, IntPtr lParam)
+        public bool Handle(IntPtr wParam, IntPtr lParam)
         {
-            if (nCode < 0)
-            {
-                return false;
-            }
-
             var vkCode = Marshal.ReadInt32(lParam);
             var inputKey = (Keys)vkCode;
 
@@ -126,7 +121,6 @@ namespace KeebSharp.Handlers
 
                     if (!layer.Active)
                     {
-                        // TODO: maybe wrap up the timer, so don't have to look at ugly full namespace
                         Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(25));
                     }
 
