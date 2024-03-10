@@ -86,11 +86,11 @@ namespace KeebSharp.Handlers
             var vkCode = Marshal.ReadInt32(lParam);
             var inputKey = (Keys)vkCode;
 
-            HandleKeyUp(wParam, inputKey);
+            RefreshLayerState(wParam, inputKey);
             return HandleKeyDown(wParam, inputKey);
         }
 
-        private void HandleKeyUp(IntPtr wParam, Keys inputKey)
+        private void RefreshLayerState(IntPtr wParam, Keys inputKey)
         {
             // Nothing to handle if it's not a key up event
             if (wParam != Constants.WM_KEYUP)
@@ -115,50 +115,53 @@ namespace KeebSharp.Handlers
 
         public bool HandleKeyDown(IntPtr wParam, Keys inputKey)
         {
-            if (wParam == Constants.WM_KEYDOWN)
+            // Nothing to handle if it's not a key down event
+            if (wParam != Constants.WM_KEYDOWN)
             {
-                if (Layers.TryGetValue(inputKey, out var layer))
+                return false;
+            }
+
+            if (Layers.TryGetValue(inputKey, out var layer))
+            {
+                if (layer.ToggleKeyDisabled)
                 {
-                    if (layer.ToggleKeyDisabled)
-                    {
-                        layer.ToggleKeyDisabled = false;
-                        return false;
-                    }
-
-                    layer.ToggleKeyHeld = true;
-                    void TimerHook(object? state)
-                    {
-                        if (layer.ToggleKeyHeld)
-                        {
-                            // If the key has not been released when the timer expires, toggle the layer
-                            layer.Active = true;
-                            ActiveLayer = layer;
-                            _logger.Info($"{layer.Name} layer active.");
-                        }
-                        else
-                        {
-                            // Otherwise, let the key through
-                            layer.ToggleKeyDisabled = true;
-                            Keyboard.Press(layer.ToggleKey, false);
-                        }
-
-                        Timer!.Dispose();
-                    }
-
-                    if (!layer.Active)
-                    {
-                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(25));
-                    }
-
-                    // Hold back the key for now, if it doesn't toggle a layer it will be let through 
-                    return true;
+                    layer.ToggleKeyDisabled = false;
+                    return false;
                 }
 
-                if (ActiveLayer != null && ActiveLayer.Active && ActiveLayer.Mappings!.TryGetValue(inputKey, out var mappedKeys))
+                layer.ToggleKeyHeld = true;
+                void TimerHook(object? state)
                 {
-                    Keyboard.Press(mappedKeys);
-                    return true;
+                    if (layer.ToggleKeyHeld)
+                    {
+                        // If the key has not been released when the timer expires, toggle the layer
+                        layer.Active = true;
+                        ActiveLayer = layer;
+                        _logger.Info($"{layer.Name} layer active.");
+                    }
+                    else
+                    {
+                        // Otherwise, let the key through
+                        layer.ToggleKeyDisabled = true;
+                        Keyboard.Press(layer.ToggleKey, false);
+                    }
+
+                    Timer!.Dispose();
                 }
+
+                if (!layer.Active)
+                {
+                    Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(25));
+                }
+
+                // Hold back the key for now, if it doesn't toggle a layer it will be let through 
+                return true;
+            }
+
+            if (ActiveLayer != null && ActiveLayer.Active && ActiveLayer.Mappings!.TryGetValue(inputKey, out var mappedKeys))
+            {
+                Keyboard.Press(mappedKeys);
+                return true;
             }
 
             // Let all unhandled keys be processed normally
