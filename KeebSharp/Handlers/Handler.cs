@@ -87,8 +87,34 @@ namespace KeebSharp.Handlers
             var inputKey = (Keys)vkCode;
 
             HandleKeyUp(wParam, inputKey);
+            return HandleKeyDown(wParam, inputKey);
+        }
 
-            // Key down events
+        private void HandleKeyUp(IntPtr wParam, Keys inputKey)
+        {
+            // Nothing to handle if it's not a key up event
+            if (wParam != Constants.WM_KEYUP)
+            {
+                return;
+            }
+
+            // Nothing to handle if we have no layers set to activate with this key
+            if (!Layers.TryGetValue(inputKey, out var layer))
+            {
+                return;
+            }
+
+            layer.ToggleKeyHeld = false;
+            if (layer.Active)
+            {
+                layer.Active = false;
+                ActiveLayer = null;
+                _logger.Info($"{layer.Name} layer inactive.");
+            }    
+        }
+
+        public bool HandleKeyDown(IntPtr wParam, Keys inputKey)
+        {
             if (wParam == Constants.WM_KEYDOWN)
             {
                 if (Layers.TryGetValue(inputKey, out var layer))
@@ -137,29 +163,6 @@ namespace KeebSharp.Handlers
 
             // Let all unhandled keys be processed normally
             return false;
-        }
-
-        private void HandleKeyUp(IntPtr wParam, Keys inputKey)
-        {
-            // Nothing to handle if it's not a key up event
-            if (wParam != Constants.WM_KEYUP)
-            {
-                return;
-            }
-
-            // Nothing to handle if we have no layers set to activate with this key
-            if (!Layers.TryGetValue(inputKey, out var layer))
-            {
-                return;
-            }
-
-            layer.ToggleKeyHeld = false;
-            if (layer.Active)
-            {
-                layer.Active = false;
-                ActiveLayer = null;
-                _logger.Info($"{layer.Name} layer inactive.");
-            }    
         }
     }
 }
