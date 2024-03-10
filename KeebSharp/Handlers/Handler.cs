@@ -7,6 +7,9 @@ using System.Windows.Forms;
 
 namespace KeebSharp.Handlers
 {
+    // TODO: Prevent another layer toggling if a layer is already toggled
+    // TODO: Respect base layer
+
     /// <summary>
     /// Handler for the keyboard events.
     /// </summary>
@@ -90,6 +93,8 @@ namespace KeebSharp.Handlers
                 // This releases the toggle key to be output
                 if (layer.ToggleKeyDisabled)
                 {
+                    // TODO: this will output whatever the key is programmed to on the actual keyboard because it will be handled by the next hook
+                    // Should use Base layer instead, not sure how to go about that yet though...
                     layer.ToggleKeyDisabled = false;
                     return false;
                 }
