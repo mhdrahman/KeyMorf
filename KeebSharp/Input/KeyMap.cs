@@ -59,6 +59,15 @@ namespace KeebSharp.Input
             },
         };
 
+        public static Layer Base = new Layer
+        {
+            Name = "Base",
+            Mappings = new()
+            {
+                [Keys.CapsLock] = new[] { (Keys.Escape, false) },
+            },
+        };
+
         public static readonly Dictionary<Keys, Layer> Layers = new Dictionary<Keys, Layer>
         {
             [LayerOne.ToggleKey] = LayerOne,
