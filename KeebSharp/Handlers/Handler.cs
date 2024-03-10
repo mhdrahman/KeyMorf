@@ -21,8 +21,7 @@ namespace KeebSharp.Handlers
 
         public bool Handle(IntPtr wParam, IntPtr lParam)
         {
-            var vkCode = Marshal.ReadInt32(lParam);
-            var inputKey = (Keys)vkCode;
+            var inputKey = (Keys)Marshal.ReadInt32(lParam);
 
             RefreshLayerState(wParam, inputKey);
             return HandleKeyDown(wParam, inputKey);
