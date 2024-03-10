@@ -53,8 +53,10 @@ namespace KeebSharp.Handlers
                 return;
             }
 
+            _logger.Debug($"Keyup event recieved for {inputKey}");
+
             // Nothing to handle if we have no layers set to activate with this key
-            if (!Mapping.Layers.TryGetValue(inputKey, out var layer))
+            if (!KeyMap.Layers.TryGetValue(inputKey, out var layer))
             {
                 return;
             }
@@ -82,7 +84,8 @@ namespace KeebSharp.Handlers
                 return false;
             }
 
-            if (Mapping.Layers.TryGetValue(inputKey, out var layer))
+            _logger.Debug($"Keydown event recieved for {inputKey}");
+            if (KeyMap.Layers.TryGetValue(inputKey, out var layer))
             {
                 // This releases the toggle key to be output
                 if (layer.ToggleKeyDisabled)

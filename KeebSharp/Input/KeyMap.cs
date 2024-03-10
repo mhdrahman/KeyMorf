@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace KeebSharp.Input
 {
-    internal static class Mapping
+    internal static class KeyMap
     {
         private static Layer LayerOne = new Layer
         {

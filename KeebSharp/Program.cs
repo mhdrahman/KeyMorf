@@ -15,7 +15,7 @@ namespace KeebSharp
     public class Program
     {
         private static IntPtr _hookId = IntPtr.Zero;
-        private static ConsoleLogger _logger = new ConsoleLogger(LogLevel.Error);
+        private static ConsoleLogger _logger = new ConsoleLogger(LogLevel.Debug);
         private static Handler _handler = new Handler(_logger);
 
         // Constant value which indicates that an event was handled.
@@ -24,7 +24,6 @@ namespace KeebSharp
         /// <summary>
         /// Entry point for the application.
         /// </summary>
-        /// <param name="args">Only valid option is --log-level error|warn|info|debug.</param>
         public static void Main(string[] args)
         {
             _hookId = SetKeyboardHook();
