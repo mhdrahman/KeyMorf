@@ -140,7 +140,7 @@ namespace KeebSharp.Handlers
                     if (!layer.Active)
                     {
                         // TODO: maybe wrap up the timer, so don't have to look at ugly full namespace
-                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.Zero);
+                        Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(25));
                     }
 
                     // Hold back the key for now, if it doesn't toggle a layer it will be let through 
