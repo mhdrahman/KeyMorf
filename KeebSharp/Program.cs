@@ -43,8 +43,8 @@ namespace KeebSharp
 
             // This is the message loop. It allows Windows to break into the thread and make the call back.
             // Passing IntPtr.Zero to GetMessage retrieves messages for any window that belongs to
-            // the current thread, and any messages on the current thread's message queue. As there
-            // are no windows, we should never actually recieve a message.
+            // the current thread, and any messages on the current thread's message queue. As low-level
+            // hooks send messages instead of queueing them, we should never actually recieve a message.
             var message = new User32.Message();
             while (User32.GetMessage(ref message, IntPtr.Zero, 0, 0))
             {
