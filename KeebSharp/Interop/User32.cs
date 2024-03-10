@@ -6,22 +6,10 @@ namespace KeebSharp.Interop
     internal static class User32
     {
         [StructLayout(LayoutKind.Sequential)]
-        internal struct Point
-        {
-            public long x;
-            public long y;
-        }
+        public struct Point { public long x; public long y; } 
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct Message
-        {
-            public IntPtr hwnd;
-            public uint message;
-            public UIntPtr wParam;
-            public IntPtr lParam;
-            public uint time;
-            public Point pt;
-        }
+        public struct Message { public IntPtr hwnd; public uint message; public UIntPtr wParam; public IntPtr lParam; public uint time; public Point pt; }
 
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
