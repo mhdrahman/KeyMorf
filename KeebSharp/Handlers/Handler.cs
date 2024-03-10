@@ -7,6 +7,9 @@ using System.Windows.Forms;
 
 namespace KeebSharp.Handlers
 {
+    /// <summary>
+    /// Handler for the keyboard events.
+    /// </summary>
     internal class Handler
     {
         private ToggleTimer? Timer;
@@ -14,11 +17,21 @@ namespace KeebSharp.Handlers
 
         private readonly ConsoleLogger _logger;
 
+        /// <summary>
+        /// Initialises an instance of <see cref="Handler"/>.
+        /// </summary>
+        /// <param name="logger"><see cref="ConsoleLogger"/></param>
         public Handler(ConsoleLogger logger)
         {
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handle the keyboard event.
+        /// </summary>
+        /// <param name="wParam">Event type.</param>
+        /// <param name="lParam">Virtual key code of the key associated with the event.</param>
+        /// <returns>A <see cref="bool"/> indicating whether the event was handled or not.</returns>
         public bool Handle(IntPtr wParam, IntPtr lParam)
         {
             var inputKey = (Keys)Marshal.ReadInt32(lParam);
@@ -27,6 +40,11 @@ namespace KeebSharp.Handlers
             return HandleKeyDown(wParam, inputKey);
         }
 
+        /// <summary>
+        /// Refresh the layer state. Checks if any key up events should disable a toggle.
+        /// </summary>
+        /// <param name="wParam">Event type.</param>
+        /// <param name="inputKey">Key associated with the event.</param>
         private void RefreshLayerState(IntPtr wParam, Keys inputKey)
         {
             // Nothing to handle if it's not a key up event
@@ -50,6 +68,12 @@ namespace KeebSharp.Handlers
             }    
         }
 
+        /// <summary>
+        /// Handle the key down event. This is where mapped keys are output.
+        /// </summary>
+        /// <param name="wParam">Event type.</param>
+        /// <param name="inputKey">Key associated with the event.</param>
+        /// <returns>A <see cref="bool"/> indicating whether the key down event was handled or not.</returns>
         private bool HandleKeyDown(IntPtr wParam, Keys inputKey)
         {
             // Nothing to handle if it's not a key down event

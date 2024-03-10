@@ -1,37 +1,72 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace KeebSharp.Logging
 {
+    /// <summary>
+    /// Logger for logging to console.
+    /// </summary>
     internal class ConsoleLogger
     {
-        // TODO accept a log level in the constructor and respect it
-        public enum LogLevel { Info, Debug, Warn, Error }
+        private readonly LogLevel _logLevel;
 
-        public void Info(string message)
+        /// <summary>
+        /// Intitialises an instance of <see cref="ConsoleLogger"/>.
+        /// </summary>
+        /// <param name="logLevel">The desired <see cref="LogLevel"/>.</param>
+        public ConsoleLogger(LogLevel logLevel)
         {
-            Console.WriteLine($"INFO:  {message}");
+            _logLevel = logLevel;
         }
 
-        public void Debug(string message)
-        {
-            Console.WriteLine($"DEBUG: {message}");
-        }
-
-        public void Warn(string message)
-        {
-            Console.WriteLine($"WARN:  {message}");
-        }
-
+        /// <summary>
+        /// Log an error message.
+        /// </summary>
+        /// <param name="message">Message to be logged.</param>
         public void Error(string message)
         {
             Console.WriteLine($"ERROR: {message}");
         }
 
-        public void Win32()
+        /// <summary>
+        /// Log an warning message.
+        /// </summary>
+        /// <param name="message">Message to be logged.</param>
+        public void Warn(string message)
         {
-            Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
+            if (_logLevel < LogLevel.Warn)
+            {
+                return;
+            }
+
+            Console.WriteLine($"WARN:  {message}");
+        }
+
+        /// <summary>
+        /// Log an info message.
+        /// </summary>
+        /// <param name="message">Message to be logged.</param>
+        public void Info(string message)
+        {
+            if (_logLevel < LogLevel.Info)
+            {
+                return;
+            }
+
+            Console.WriteLine($"INFO:  {message}");
+        }
+
+        /// <summary>
+        /// Log a debug message.
+        /// </summary>
+        /// <param name="message">Message to be logged.</param>
+        public void Debug(string message)
+        {
+            if (_logLevel < LogLevel.Debug)
+            {
+                return;
+            }
+
+            Console.WriteLine($"DEBUG: {message}");
         }
     }
 }

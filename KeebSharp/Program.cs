@@ -9,20 +9,28 @@ using System.Windows.Forms;
 
 namespace KeebSharp
 {
+    /// <summary>
+    /// Contains the startup and run logic for KeyMorf.
+    /// </summary>
     public class Program
     {
         private static IntPtr _hookId = IntPtr.Zero;
-        private static ConsoleLogger _logger = new ConsoleLogger();
+        private static ConsoleLogger _logger = new ConsoleLogger(LogLevel.Error);
         private static Handler _handler = new Handler(_logger);
 
+        // Constant value which indicates that an event was handled.
         private static IntPtr Handled = new(1);
 
+        /// <summary>
+        /// Entry point for the application.
+        /// </summary>
+        /// <param name="args">Only valid option is --log-level error|warn|info|debug.</param>
         public static void Main(string[] args)
         {
             _hookId = SetKeyboardHook();
             if (_hookId == IntPtr.Zero)
             {
-                _logger.Win32();
+                _logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
                 Environment.Exit(-1);
             }
 
@@ -39,6 +47,11 @@ namespace KeebSharp
             Application.Run();
         }
 
+        /// <summary>
+        /// Install the low-level keyboard hook.
+        /// </summary>
+        /// <returns>The installed hook id if it was installed successfully.
+        /// Returns IntPtr.Zero if an error occured while installing the hook.</returns>
         private static IntPtr SetKeyboardHook()
         {
             using (var process = Process.GetCurrentProcess())
@@ -46,20 +59,20 @@ namespace KeebSharp
             {
                 if (module == null)
                 {
-                    _logger.Error($"ERROR: {nameof(module)} was null.");
+                    _logger.Error($"{nameof(module)} was null.");
                     return IntPtr.Zero;
                 }
 
                 if (module.ModuleName == null)
                 {
-                    _logger.Error($"ERROR: {nameof(module.ModuleName)} was null.");
+                    _logger.Error($"{nameof(module.ModuleName)} was null.");
                     return IntPtr.Zero;
                 }
 
                 var moduleHandle = Kernel32.GetModuleHandle(module.ModuleName);
                 if (moduleHandle == IntPtr.Zero)
                 {
-                    _logger.Error($"ERROR: {new Win32Exception(Marshal.GetLastWin32Error())}");
+                    _logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
                     return IntPtr.Zero;
                 }
 
@@ -67,6 +80,14 @@ namespace KeebSharp
             }
         }
 
+        /// <summary>
+        /// The keyboard hook to be installed.
+        /// </summary>
+        /// <param name="nCode">Indicates whether <paramref name="lParam"/> and <paramref name="wParam"/>
+        /// contains valid data. A value of 0 indicates valid data.</param>
+        /// <param name="wParam">Event type.</param>
+        /// <param name="lParam">Virtual key code of the key associated with the event.</param>
+        /// <returns></returns>
         private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode < 0)
