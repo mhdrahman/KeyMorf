@@ -9,7 +9,7 @@ namespace KeebSharp.Handlers
 {
     internal class Handler
     {
-        private System.Threading.Timer? Timer;
+        private ToggleTimer? Timer;
         private Layer? ActiveLayer;
 
         private readonly ConsoleLogger _logger;
@@ -90,7 +90,7 @@ namespace KeebSharp.Handlers
 
                 if (!layer.Active)
                 {
-                    Timer = new System.Threading.Timer(TimerHook, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(25));
+                    Timer = new ToggleTimer(TimerHook);
                 }
 
                 // Hold back the key for now, if it doesn't toggle a layer it will be let through 
