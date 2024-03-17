@@ -17,6 +17,7 @@ namespace KeebSharp
         private static IntPtr _hookId = IntPtr.Zero;
         private static readonly ConsoleLogger _logger = new(LogLevel.Info);
         private static readonly Handler _handler = new(_logger);
+        private static readonly User32.LowLevelKeyboardProc _hookInstance = new(KeyboardHook);
 
         // Constant value which indicates that an event was handled.
         private static readonly IntPtr Handled = new(1);
@@ -81,7 +82,7 @@ namespace KeebSharp
                 return IntPtr.Zero;
             }
 
-            return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, KeyboardHook, Kernel32.GetModuleHandle(module.ModuleName), 0);
+            return User32.SetWindowsHookEx((int)Constants.WH_KEYBOARD_LL, _hookInstance, Kernel32.GetModuleHandle(module.ModuleName), 0);
         }
 
         /// <summary>
