@@ -7,11 +7,16 @@ namespace KeyMorf
 {
     public static class Program
     {
+        private static readonly IntPtr KEY_HANDLED = new(1);
+
         private static IntPtr _hookId = IntPtr.Zero;
         private static readonly Win32.LowLevelKeyboardProc _hookInstance = new(KeyboardHook);
+        private static readonly Handler _handler = new();
 
         public static void Main(string[] args)
         {
+            Logger.Level = LogLevel.Info; 
+
             Console.CancelKeyPress += (_, _) =>
             {
                 Logger.Info("KeyMorf is exiting...");
@@ -44,7 +49,7 @@ namespace KeyMorf
                 var moduleHandle = Win32.GetModuleHandle(module.ModuleName!);
                 if (moduleHandle == IntPtr.Zero)
                 {
-                    Logger.Error($"{new Win32Exception(Marshal.GetLastWin32Error())}");
+                    Logger.Error($"Failed to get module handle: {new Win32Exception(Marshal.GetLastWin32Error())}");
                 }
 
                 Logger.Info("Module handle retrieved.");
@@ -53,7 +58,7 @@ namespace KeyMorf
                 _hookId = Win32.SetWindowsHookEx(Win32.WH_KEYBOARD_LL, _hookInstance, Win32.GetModuleHandle(module.ModuleName!), 0);
                 if (_hookId == IntPtr.Zero)
                 {
-                    Logger.Error($"Failed to install hook. Exiting...");
+                    Logger.Error($"Failed to install hook: {new Win32Exception(Marshal.GetLastWin32Error())}");
                 }
 
                 Logger.Info("Hook installed. KeyMorf is running. Press <C-c> to exit.");
@@ -64,33 +69,23 @@ namespace KeyMorf
                 var message = new Win32.Message();
                 while (Win32.GetMessage(ref message, IntPtr.Zero, 0, 0))
                 {
-                    Logger.Error($"Recieved a message unexpectedly. Exiting...");
+                    Logger.Error($"Recieved a message unexpectedly: {message}. Exiting...");
                 }
             }
         }
-
-        private static readonly IntPtr KEY_UP = new IntPtr(0x0101);
-        private static readonly IntPtr KEY_DOWN = new IntPtr(0x0100);
 
         private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode < 0)
             {
                 // Never seen this happen before...
-                Logger.Warn($"{nameof(nCode)} was less than zero.");
+                Logger.Error($"{nameof(nCode)} was less than zero.");
                 return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
             }
 
-            var keyCode = Marshal.ReadInt32(lParam);
-
-            if (wParam == KEY_UP)
+            if (_handler.Handle(wParam, Marshal.ReadInt32(lParam)))
             {
-                Logger.Debug($"Key down with key code {keyCode}.");
-            }
-
-            if (wParam == KEY_DOWN)
-            {
-                Logger.Debug($"Key up with key code {keyCode}.");
+                return KEY_HANDLED;
             }
 
             // For any unhandled keys, let the key be processed as normal.

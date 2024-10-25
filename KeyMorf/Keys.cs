@@ -79,6 +79,5 @@
         public const int Left = 37;
         public const int Down = 40;
         public const int Right = 39;
-
     }
 }
