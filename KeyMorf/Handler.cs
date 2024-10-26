@@ -4,59 +4,75 @@ using System.Threading;
 
 namespace KeyMorf
 {
-    public class Handler
+    public static class Handler
     {
-        private static readonly IntPtr KEY_UP = new IntPtr(0x0101);
-        private static readonly IntPtr KEY_DOWN = new IntPtr(0x0100);
+        private static readonly IntPtr KEY_UP = new(0x0101);
+        private static readonly IntPtr KEY_DOWN = new(0x0100);
 
-        private static Layer _testLayer = new Layer
+        private static readonly Layer _testLayer = new("Symbols", new Keymap(
+            new Dictionary<int, (int, int[])>
+            {
+                // (-)
+                [Keys.Y] = (Keys.Nine, new int[] { Keys.LShift }),
+                [Keys.U] = (Keys.Zero, new int[] { Keys.LShift }),
+
+                // {-}
+                [Keys.I] = (Keys.LSquareBracket, new int[] { Keys.LShift }),
+                [Keys.O] = (Keys.RSquareBracket, new int[] { Keys.LShift }),
+
+                // <->
+                [Keys.Eight] = (Keys.Comma, new int[] { Keys.LShift }),
+                [Keys.Nine] = (Keys.Fullstop, new int[] { Keys.LShift }),
+
+                // [-]
+                [Keys.P] = (Keys.LSquareBracket, Array.Empty<int>()),
+                [Keys.Semicolon] = (Keys.RSquareBracket, Array.Empty<int>()),
+
+                // !=&|
+                [Keys.N] = (Keys.One, new int[] { Keys.LShift }),
+                [Keys.M] = (Keys.Equal, Array.Empty<int>()),
+                [Keys.Comma] = (Keys.Seven, new int[] { Keys.LShift }),
+                [Keys.Fullstop] = (Keys.Hash, new int[] { Keys.RControl, Keys.LAlt, Keys.LShift }),
+
+                // Nav
+                [Keys.H] = (Keys.Left, Array.Empty<int>()),
+                [Keys.J] = (Keys.Down, Array.Empty<int>()),
+                [Keys.K] = (Keys.Up, Array.Empty<int>()),
+                [Keys.L] = (Keys.Right, Array.Empty<int>()),
+            },
+            new Dictionary<int, (int, int[])[]>
+            {
+                [Keys.Up] = new (int, int[])[]
+                {
+                    (Keys.H, new int[] { Keys.LShift }),
+                    (Keys.E, Array.Empty<int>()),
+                    (Keys.L, Array.Empty<int>()),
+                    (Keys.L, Array.Empty<int>()),
+                    (Keys.O, Array.Empty<int>()),
+                    (Keys.Comma, Array.Empty<int>()),
+                    (Keys.Space, Array.Empty<int>()),
+                    (Keys.W, new int[] { Keys.RShift }),
+                    (Keys.O, Array.Empty<int>()),
+                    (Keys.R, Array.Empty<int>()),
+                    (Keys.L, Array.Empty<int>()),
+                    (Keys.D, Array.Empty<int>()),
+                    (Keys.One, new int[] { Keys.RShift }),
+                }
+            }))
         {
-            Name = "Symbols",
             ToggleKey = Keys.Q,
             ToggleTimeMs = 200,
-            Keymap = new Keymap
-            {
-                Mappings = new Dictionary<int, (int, int[])>
-                {
-                    // (-)
-                    [Keys.Y] = (Keys.Nine, new int[] { Keys.LShift }),
-                    [Keys.U] = (Keys.Zero, new int[] { Keys.LShift }),
-
-                    // {-}
-                    [Keys.I] = (Keys.LSquareBracket, new int[] { Keys.LShift }),
-                    [Keys.O] = (Keys.RSquareBracket, new int[] { Keys.LShift }),
-
-                    // <->
-                    [Keys.Eight] = (Keys.Comma, new int[] { Keys.LShift }),
-                    [Keys.Nine] = (Keys.Fullstop, new int[] { Keys.LShift }),
-
-                    // [-]
-                    [Keys.P] = (Keys.LSquareBracket, new int[0]),
-                    [Keys.Semicolon] = (Keys.RSquareBracket, new int[0]),
-
-                    // !=&|
-                    [Keys.N] = (Keys.One, new int[] { Keys.LShift }),
-                    [Keys.M] = (Keys.Equal, new int[0]),
-                    [Keys.Comma] = (Keys.Seven, new int[] { Keys.LShift }),
-                    [Keys.Fullstop] = (Keys.Hash, new int[] { Keys.RControl, Keys.LAlt, Keys.LShift }),
-
-                    // Nav
-                    [Keys.H] = (Keys.Left, new int[0]),
-                    [Keys.J] = (Keys.Down, new int[0]),
-                    [Keys.K] = (Keys.Up, new int[0]),
-                    [Keys.L] = (Keys.Right, new int[0]),
-                },
-            },
         };
 
-        public bool Handle(IntPtr eventType, IntPtr lParam, int keyCode)
+        public static bool Handle(IntPtr wParam, IntPtr lParam, int keyCode)
         {
+            // If this key was sent by us, we don't want to handle it again.
             if (Keyboard.IsProgrammatic(lParam))
             {
                 return false;
             }
 
-            if (eventType == KEY_DOWN)
+            if (wParam == KEY_DOWN)
             {
                 if (keyCode == _testLayer.ToggleKey)
                 {
@@ -91,15 +107,30 @@ namespace KeyMorf
                     return true;
                 }
 
-                // If the key is mapped, press the mapped key.
-                if (_testLayer.Toggled && _testLayer.Keymap.Mappings.TryGetValue(keyCode, out var mapped))
+                if (_testLayer.Toggled)
                 {
-                    Keyboard.Press(mapped.KeyCode, mapped.Mods);
-                    return true;
+                    // If the key is mapped, press the mapped key.
+                    if (_testLayer.Keymap.Mappings.TryGetValue(keyCode, out var mapped))
+                    {
+                        Keyboard.Press(mapped.KeyCode, mapped.Mods);
+                        return true;
+                    }
+
+                    // If the key has a macro assigned, run it.
+                    if (_testLayer.Keymap.Macros.TryGetValue(keyCode, out var macro))
+                    {
+                        foreach (var (KeyCode, Mods) in macro)
+                        {
+                            Keyboard.Press(KeyCode, Mods);
+                        }
+
+                        return true;
+                    }
                 }
             }
 
-            if (eventType == KEY_UP && keyCode == _testLayer.ToggleKey)
+            // Only thing to do on key up is untoggle any layers associated with the key.
+            if (wParam == KEY_UP && keyCode == _testLayer.ToggleKey)
             {
                 if (_testLayer.Toggled)
                 {
@@ -119,13 +150,14 @@ namespace KeyMorf
                 }
             }
 
+            // For any unhandled keys, let them get processed by the next hook.
             return false;
         }
     }
 
     public class Layer
     {
-        public string Name { get; set; }
+        public string Name { get; }
 
         public int ToggleKey { get; set; }
 
@@ -135,13 +167,25 @@ namespace KeyMorf
 
         public bool TogglePending { get; set; }
 
-        public Keymap Keymap { get; set; }
+        public Keymap Keymap { get; }
+
+        public Layer(string name, Keymap keymap)
+        {
+            Name = name;
+            Keymap = keymap;
+        }
     }
 
     public class Keymap
     {
-        public Dictionary<int, (int KeyCode, int[] Mods)> Mappings { get; set; }
+        public Dictionary<int, (int KeyCode, int[] Mods)> Mappings { get; }
 
-        public dynamic Macros { get; set; }
+        public Dictionary<int, (int KeyCode, int[] Mods)[]> Macros { get; }
+
+        public Keymap(Dictionary<int, (int, int[])> mappings, Dictionary<int, (int, int[])[]> macros)
+        {
+            Mappings = mappings;
+            Macros = macros;
+        }
     }
 }
