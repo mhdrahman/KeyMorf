@@ -15,7 +15,7 @@ namespace KeyMorf
 
         public static void Main(string[] args)
         {
-            Logger.Level = LogLevel.Info; 
+            Logger.Level = LogLevel.Debug; 
 
             Console.CancelKeyPress += (_, _) =>
             {
@@ -83,7 +83,7 @@ namespace KeyMorf
                 return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
             }
 
-            if (_handler.Handle(wParam, Marshal.ReadInt32(lParam)))
+            if (_handler.Handle(wParam, lParam, Marshal.ReadInt32(lParam)))
             {
                 return KEY_HANDLED;
             }
