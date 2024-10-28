@@ -13,7 +13,7 @@ namespace KeyMorf
                 return;
             }
 
-            Console.WriteLine($"INF {DateTime.Now}: {message}");
+            Console.WriteLine($"[INF] {DateTime.Now:yyyy/MM/ddTHH:mm:ss:fff}: {message}");
         }
 
         public static void Debug(string? message)
@@ -23,7 +23,7 @@ namespace KeyMorf
                 return;
             }
 
-            Console.WriteLine($"DBG {DateTime.Now}: {message}");
+            Console.WriteLine($"[DBG] {DateTime.Now:yyyy/MM/ddTHH:mm:ss:fff}: {message}");
         }
 
         public static void Error(string? message)
@@ -33,7 +33,7 @@ namespace KeyMorf
                 return;
             }
 
-            Console.WriteLine($"ERR {DateTime.Now}: {message}");
+            Console.WriteLine($"[ERR] {DateTime.Now:yyyy/MM/ddTHH:mm:ss:fff}: {message}");
             Environment.Exit(1);
         }
     }
