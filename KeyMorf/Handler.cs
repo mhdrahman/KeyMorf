@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace KeyMorf
@@ -60,14 +61,15 @@ namespace KeyMorf
                 }
             }))
         {
-            ToggleKey = Keys.Q,
+            ToggleKey = Keys.Z,
             ToggleTimeMs = 200,
         };
 
         public static bool Handle(IntPtr wParam, IntPtr lParam, int keyCode)
         {
             // If this key was sent by us, we don't want to handle it again.
-            if (Keyboard.IsProgrammatic(lParam))
+            var kbData = (Win32.HookStruct)Marshal.PtrToStructure(lParam, typeof(Win32.HookStruct))!;
+            if ((kbData.flags & Win32.LLKHF_INJECTED) != 0)
             {
                 return false;
             }
@@ -112,7 +114,7 @@ namespace KeyMorf
                     // If the key is mapped, press the mapped key.
                     if (_testLayer.Keymap.Mappings.TryGetValue(keyCode, out var mapped))
                     {
-                        Keyboard.Press(mapped.KeyCode, mapped.Mods);
+                        Keyboard.SendKey(mapped.KeyCode, mapped.Mods);
                         return true;
                     }
 
@@ -121,7 +123,7 @@ namespace KeyMorf
                     {
                         foreach (var (KeyCode, Mods) in macro)
                         {
-                            Keyboard.Press(KeyCode, Mods);
+                            Keyboard.SendKey(KeyCode, Mods);
                         }
 
                         return true;
