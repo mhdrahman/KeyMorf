@@ -2,24 +2,21 @@
 {
     public static class Keyboard
     {
-        public static bool IsKeyDown(int keyCode)
-            => (Win32.GetKeyState(keyCode) & 0x8000) == 0x8000;
+        public static void Press(Keys key)
+            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYDOWN, 0);
 
-        public static void Press(int keyCode)
-            => Win32.keybd_event((byte)keyCode, 0, 0, 0);
+        public static void Release(Keys key)
+            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYUP, 0);
 
-        public static void Release(int keyCode)
-            => Win32.keybd_event((byte)keyCode, 0, 2, 0);
-
-        public static void SendKey(int keyCode, params int[] mods)
+        public static void SendKey(Keys key, params Keys[] mods)
         {
             foreach (var mod in mods)
             {
                 Press(mod);
             }
 
-            Press(keyCode);
-            Release(keyCode);
+            Press(key);
+            Release(key);
 
             foreach (var mod in mods)
             {

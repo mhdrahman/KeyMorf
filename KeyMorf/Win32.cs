@@ -8,7 +8,12 @@ namespace KeyMorf
     public static class Win32
     {
         public const int WH_KEYBOARD_LL = 13;
+        public const int KEYEVENTF_KEYDOWN = 0;
+        public const int KEYEVENTF_KEYUP = 2;
         public const int LLKHF_INJECTED = 16;
+
+        public static readonly IntPtr WM_KEYDOWN = new(256);
+        public static readonly IntPtr WM_KEYUP = new(257);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);

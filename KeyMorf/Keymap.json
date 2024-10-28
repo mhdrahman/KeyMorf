@@ -1,1 +1,8 @@
-{}
+{
+  "Symbols": {
+    "ToggleKey": "Keys.Z",
+    "ToggleTimeMs": 200,
+    "Mappings": {
+    }
+  }
+}
