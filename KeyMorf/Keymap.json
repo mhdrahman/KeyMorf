@@ -1,8 +1,71 @@
 {
   "Symbols": {
-    "ToggleKey": "Keys.Z",
+    "ToggleKey": "Z",
     "ToggleTimeMs": 200,
-    "Mappings": {
-    }
+    "Mappings": [
+      {
+        "From": "Y",
+        "To": "Nine",
+        "Mods": [ "LShift" ]
+      },
+      {
+        "From": "U",
+        "To": "Zero",
+        "Mods": [ "LShift" ]
+      },
+      {
+        "From": "I",
+        "To": "LSquareBracket",
+        "Mods": [ "LShift" ]
+      },
+      {
+        "From": "O",
+        "To": "RSquareBracket",
+        "Mods": [ "LShift" ]
+      },
+      {
+        "From": "P",
+        "To": "LSquareBracket"
+      },
+      {
+        "From": "Semicolon",
+        "To": "RSquareBracket"
+      },
+      {
+        "From": "N",
+        "To": "One",
+        "Mods": [ "RShift" ]
+      },
+      {
+        "From": "M",
+        "To": "Equal"
+      },
+      {
+        "From": "Comma",
+        "To": "Seven",
+        "Mods": [ "LShift" ]
+      },
+      {
+        "From": "Fullstop",
+        "To": "Backslash",
+        "Mods": [ "RShift" ]
+      },
+      {
+        "From": "H",
+        "To": "Left"
+      },
+      {
+        "From": "J",
+        "To": "Down"
+      },
+      {
+        "From": "K",
+        "To": "Up"
+      },
+      {
+        "From": "L",
+        "To": "Right"
+      }
+    ]
   }
 }

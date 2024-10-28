@@ -30,7 +30,7 @@ namespace KeyMorf
                 [Keys.N] = (Keys.One, new Keys[] { Keys.LShift }),
                 [Keys.M] = (Keys.Equal, Array.Empty<Keys>()),
                 [Keys.Comma] = (Keys.Seven, new Keys[] { Keys.LShift }),
-                [Keys.Fullstop] = (Keys.Hash, new Keys[] { Keys.RControl, Keys.LAlt, Keys.LShift }),
+                [Keys.Fullstop] = (Keys.Backslash, new Keys[] { Keys.RShift }),
 
                 // Nav
                 [Keys.H] = (Keys.Left, Array.Empty<Keys>()),
