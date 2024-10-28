@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -7,7 +6,7 @@ namespace KeyMorf
 {
     public static class Handler
     {
-        private static readonly Layer _testLayer = Keymap.Layers.First().Value;
+        private static Layer? _toggledLayer;
 
         public static bool Handle(IntPtr wParam, IntPtr lParam, int keyCode)
         {
@@ -19,25 +18,28 @@ namespace KeyMorf
             }
 
             var key = (Keys)keyCode;
+            var isToggleKey = Keymap.Layers.TryGetValue(key, out var layer); 
 
             if (wParam == Win32.WM_KEYDOWN)
             {
-                if (key == _testLayer.ToggleKey)
+                if (isToggleKey)
                 {
                     // If there's no pending toggle and the layer is not already toggled, start the toggle timer.
-                    if (!_testLayer.Toggled && !_testLayer.TogglePending)
+                    if (!layer!.Toggled && !layer.TogglePending)
                     {
                         Logger.Debug("Starting toggle timer.");
-                        _testLayer.TogglePending = true;
+                        layer.TogglePending = true;
                         new Timer(state =>
                         {
                             Logger.Debug("Toggle timer ended.");
-                            if (_testLayer.TogglePending)
+                            if (layer.TogglePending)
                             {
-                                _testLayer.TogglePending = false;
-                                _testLayer.Toggled = true;
+                                layer.TogglePending = false;
+                                layer.Toggled = true;
+                                
+                                _toggledLayer = layer;
 
-                                Logger.Debug($"Layer {_testLayer.Name} toggled.");
+                                Logger.Debug($"Layer {layer.Name} toggled.");
                             }
 
                             // The timer is state.
@@ -48,17 +50,17 @@ namespace KeyMorf
                                 Logger.Debug("Timer disposed.");
                             }
 
-                        }).Change(_testLayer.ToggleTimeMs, -1);
+                        }).Change(layer.ToggleTimeMs, -1);
                     }
 
                     // Hold back toggle keys.
                     return true;
                 }
 
-                if (_testLayer.Toggled)
+                if (_toggledLayer is not null)
                 {
                     // If the key is mapped, press the mapped key.
-                    if (_testLayer.Mappings.TryGetValue(key, out var mapped))
+                    if (_toggledLayer.Mappings.TryGetValue(key, out var mapped))
                     {
                         Keyboard.SendKey(mapped.Key, mapped.Mods ?? Array.Empty<Keys>());
                         return true;
@@ -69,21 +71,23 @@ namespace KeyMorf
             }
 
             // Only thing to do on key up is untoggle any layers associated with the key.
-            if (wParam == Win32.WM_KEYUP && key == _testLayer.ToggleKey)
+            if (wParam == Win32.WM_KEYUP && isToggleKey)
             {
-                if (_testLayer.Toggled)
+                if (layer!.Toggled)
                 {
-                    _testLayer.Toggled = false;
-                    Logger.Debug($"Layer {_testLayer.Name} untoggled.");
+                    layer.Toggled = false;
+                    _toggledLayer = null;
 
+                    Logger.Debug($"Layer {layer.Name} untoggled.");
                     return true;
                 }
-                else if (_testLayer.TogglePending)
+                else if (layer.TogglePending)
                 {
-                    _testLayer.TogglePending = false;
-                    Logger.Debug($"Layer {_testLayer.Name} toggle cancelled.");
+                    layer.TogglePending = false;
+                    Logger.Debug($"Layer {layer.Name} toggle cancelled.");
 
-                    Keyboard.Press(_testLayer.ToggleKey);
+                    // If the toggle was pending but was cancelled, release the toggle key as a key press.
+                    Keyboard.Press(layer.ToggleKey);
                     return true;
                 }
             }
