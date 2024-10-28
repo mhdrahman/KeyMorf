@@ -1,7 +1,7 @@
 {
   "Symbols": {
     "ToggleKey": "Z",
-    "ToggleTimeMs": 200,
+    "ToggleTimeMs": 100,
     "Mappings": [
       {
         "From": "Y",
@@ -66,6 +66,7 @@
         "From": "L",
         "To": "Right"
       }
-    ]
+    ],
+    "Macros": []
   }
 }

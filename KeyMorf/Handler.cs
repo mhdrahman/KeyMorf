@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -7,60 +7,7 @@ namespace KeyMorf
 {
     public static class Handler
     {
-        private static readonly Layer _testLayer = new("Symbols", new Keymap(
-            new Dictionary<Keys, (Keys, Keys[])>
-            {
-                // (-)
-                [Keys.Y] = (Keys.Nine, new Keys[] { Keys.LShift }),
-                [Keys.U] = (Keys.Zero, new Keys[] { Keys.LShift }),
-
-                // {-}
-                [Keys.I] = (Keys.LSquareBracket, new Keys[] { Keys.LShift }),
-                [Keys.O] = (Keys.RSquareBracket, new Keys[] { Keys.LShift }),
-
-                // <->
-                [Keys.Eight] = (Keys.Comma, new Keys[] { Keys.LShift }),
-                [Keys.Nine] = (Keys.Fullstop, new Keys[] { Keys.LShift }),
-
-                // [-]
-                [Keys.P] = (Keys.LSquareBracket, Array.Empty<Keys>()),
-                [Keys.Semicolon] = (Keys.RSquareBracket, Array.Empty<Keys>()),
-
-                // !=&|
-                [Keys.N] = (Keys.One, new Keys[] { Keys.LShift }),
-                [Keys.M] = (Keys.Equal, Array.Empty<Keys>()),
-                [Keys.Comma] = (Keys.Seven, new Keys[] { Keys.LShift }),
-                [Keys.Fullstop] = (Keys.Backslash, new Keys[] { Keys.RShift }),
-
-                // Nav
-                [Keys.H] = (Keys.Left, Array.Empty<Keys>()),
-                [Keys.J] = (Keys.Down, Array.Empty<Keys>()),
-                [Keys.K] = (Keys.Up, Array.Empty<Keys>()),
-                [Keys.L] = (Keys.Right, Array.Empty<Keys>()),
-            },
-            new Dictionary<Keys, (Keys, Keys[])[]>
-            {
-                [Keys.Up] = new (Keys, Keys[])[]
-                {
-                    (Keys.H, new Keys[] { Keys.LShift }),
-                    (Keys.E, Array.Empty<Keys>()),
-                    (Keys.L, Array.Empty<Keys>()),
-                    (Keys.L, Array.Empty<Keys>()),
-                    (Keys.O, Array.Empty<Keys>()),
-                    (Keys.Comma, Array.Empty<Keys>()),
-                    (Keys.Space, Array.Empty<Keys>()),
-                    (Keys.W, new Keys[] { Keys.RShift }),
-                    (Keys.O, Array.Empty<Keys>()),
-                    (Keys.R, Array.Empty<Keys>()),
-                    (Keys.L, Array.Empty<Keys>()),
-                    (Keys.D, Array.Empty<Keys>()),
-                    (Keys.One, new Keys[] { Keys.RShift }),
-                }
-            }))
-        {
-            ToggleKey = Keys.Z,
-            ToggleTimeMs = 200,
-        };
+        private static readonly Layer _testLayer = Keymap.Layers.First().Value;
 
         public static bool Handle(IntPtr wParam, IntPtr lParam, int keyCode)
         {
@@ -111,22 +58,13 @@ namespace KeyMorf
                 if (_testLayer.Toggled)
                 {
                     // If the key is mapped, press the mapped key.
-                    if (_testLayer.Keymap.Mappings.TryGetValue(key, out var mapped))
+                    if (_testLayer.Mappings.TryGetValue(key, out var mapped))
                     {
-                        Keyboard.SendKey(mapped.KeyCode, mapped.Mods);
+                        Keyboard.SendKey(mapped.Key, mapped.Mods ?? Array.Empty<Keys>());
                         return true;
                     }
 
-                    // If the key has a macro assigned, run it.
-                    if (_testLayer.Keymap.Macros.TryGetValue(key, out var macro))
-                    {
-                        foreach (var (KeyCode, Mods) in macro)
-                        {
-                            Keyboard.SendKey(KeyCode, Mods);
-                        }
-
-                        return true;
-                    }
+                    // TODO: If the key has a macro assigned, run it...
                 }
             }
 
@@ -152,40 +90,6 @@ namespace KeyMorf
 
             // For any unhandled keys, let them get processed by the next hook.
             return false;
-        }
-    }
-
-    public class Layer
-    {
-        public string Name { get; }
-
-        public Keys ToggleKey { get; set; }
-
-        public int ToggleTimeMs { get; set; }
-
-        public bool Toggled { get; set; }
-
-        public bool TogglePending { get; set; }
-
-        public Keymap Keymap { get; }
-
-        public Layer(string name, Keymap keymap)
-        {
-            Name = name;
-            Keymap = keymap;
-        }
-    }
-
-    public class Keymap
-    {
-        public Dictionary<Keys, (Keys KeyCode, Keys[] Mods)> Mappings { get; }
-
-        public Dictionary<Keys, (Keys KeyCode, Keys[] Mods)[]> Macros { get; }
-
-        public Keymap(Dictionary<Keys, (Keys, Keys[])> mappings, Dictionary<Keys, (Keys, Keys[])[]> macros)
-        {
-            Mappings = mappings;
-            Macros = macros;
         }
     }
 }

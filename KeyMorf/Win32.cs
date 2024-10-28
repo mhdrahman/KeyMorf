@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 namespace KeyMorf
 {
     [SuppressMessage("Major Code Smell", "S4200: Native methods should be wrapped", Justification = "Rather not wrap all these Win32 API functions.")]
+    [SuppressMessage("Major Code Smell", "CA1401: P/Invokes should not be visible", Justification = "Rather not wrap all these Win32 API functions.")]
     public static class Win32
     {
         public const int WH_KEYBOARD_LL = 13;
@@ -27,7 +28,7 @@ namespace KeyMorf
         [DllImport("user32.dll", SetLastError = true)]
         public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
