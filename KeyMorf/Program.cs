@@ -32,7 +32,7 @@ namespace KeyMorf
         /// </summary>
         public static void Main()
         {
-            Logger.Level = LogLevel.Debug;
+            Logger.Level = LogLevel.Info;
 
             Console.CancelKeyPress += (_, _) =>
             {
