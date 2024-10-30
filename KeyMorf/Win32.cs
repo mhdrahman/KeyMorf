@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace KeyMorf
 {
-    [SuppressMessage("Major Code Smell", "S4200: Native methods should be wrapped", Justification = "Rather not wrap all these Win32 API functions.")]
-    [SuppressMessage("Major Code Smell", "CA1401: P/Invokes should not be visible", Justification = "Rather not wrap all these Win32 API functions.")]
-    public static class Win32
+    /// <summary>
+    /// Class containing Win32 API interop stuff. See <see cref="https://learn.microsoft.com/en-us/windows/win32/api/"/> for more info on each of these.
+    /// </summary>
+    internal static class Win32
     {
+        #region Constants
+
         public const int WH_KEYBOARD_LL = 13;
         public const int KEYEVENTF_KEYDOWN = 0;
         public const int KEYEVENTF_KEYUP = 2;
@@ -15,6 +17,10 @@ namespace KeyMorf
 
         public static readonly IntPtr WM_KEYDOWN = new(256);
         public static readonly IntPtr WM_KEYUP = new(257);
+
+        #endregion Constants
+
+        #region Methods
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
@@ -36,6 +42,10 @@ namespace KeyMorf
 
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        #endregion Methods
+
+        #region Structs
+
         [StructLayout(LayoutKind.Sequential)]
         public struct HookStruct { public uint vkCode; public uint scanCode; public uint flags; public uint time; public IntPtr dwExtraInfo; }
 
@@ -44,5 +54,7 @@ namespace KeyMorf
 
         [StructLayout(LayoutKind.Sequential)]
         public struct Point { public long x; public long y; }
+
+        #endregion Structs
     }
 }

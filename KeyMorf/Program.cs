@@ -5,16 +5,34 @@ using System.Runtime.InteropServices;
 
 namespace KeyMorf
 {
+    /// <summary>
+    /// Class containing the main entry point of KeyMorf.
+    /// </summary>
     public static class Program
     {
+        /// <summary>
+        /// Constant returned to indicate a keyboard input event was handled.
+        /// </summary>
         private static readonly IntPtr KEY_HANDLED = new(1);
 
+        /// <summary>
+        /// Identifier for the installed hook. Used when calling <see cref="Win32.CallNextHookEx(IntPtr, int, IntPtr, IntPtr)"/> and when uninstalling the hook on application exit..
+        /// </summary>
         private static IntPtr _hookId = IntPtr.Zero;
+
+        /// <summary>
+        /// Single static instance of the hook to prevent it being killed during GC.
+        /// </summary>
         private static readonly Win32.LowLevelKeyboardProc _hookInstance = new(KeyboardHook);
 
+        /// <summary>
+        /// The entry point for the KeyMorf application. Initializes the keyboard hook,
+        /// sets up a handler to exit the application on Ctrl+C, and starts a message
+        /// loop to listen for keyboard events.
+        /// </summary>
         public static void Main()
         {
-            Logger.Level = LogLevel.Debug; 
+            Logger.Level = LogLevel.Debug;
 
             Console.CancelKeyPress += (_, _) =>
             {
@@ -67,16 +85,25 @@ namespace KeyMorf
             }
         }
 
+        /// <summary>
+        /// Low level keyboard hook delegate. See <see cref="https://learn.microsoft.com/en-us/windows/win32/winmsg/lowlevelkeyboardproc"/> for more information.
+        /// </summary>
+        /// <param name="nCode">Code used to determine if the message should be processed or not.</param>
+        /// <param name="wParam">The identifier of the keyboard message.</param>
+        /// <param name="lParam">A pointer to a <see cref="Win32.HookStruct"/>.</param>
+        /// <returns>A non-zero value if the message was handled, otherwise the result of calling the <see cref="Win32.CallNextHookEx(IntPtr, int, IntPtr, IntPtr)"/>.</returns>
         private static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode < 0)
             {
                 // Never seen this happen before...
-                Logger.Error($"{nameof(nCode)} was less than zero.");
+                Logger.Info($"{nameof(nCode)} was less than zero.");
+                return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
             }
 
             if (Handler.Handle(wParam, lParam, Marshal.ReadInt32(lParam)))
             {
+                // This prevents the key from being handled by the next hook.
                 return KEY_HANDLED;
             }
 

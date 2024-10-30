@@ -4,10 +4,23 @@ using System.Threading;
 
 namespace KeyMorf
 {
+    /// <summary>
+    /// Class containing the logic for handling the keyboard input events.
+    /// </summary>
     public static class Handler
     {
+        /// <summary>
+        /// The currently toggled <see cref="Layer"/>, null if no layer is currently toggled.
+        /// </summary>
         private static Layer? _toggledLayer;
 
+        /// <summary>
+        /// Try to handle the keyboard input event. 
+        /// </summary>
+        /// <param name="wParam">The identifier of the keyboard message.</param>
+        /// <param name="lParam">A pointer to a <see cref="Win32.HookStruct"/>.</param>
+        /// <param name="keyCode">Marshalled <see cref="int"/> value of <paramref name="lParam"/>, this is the keycode of the key.</param>
+        /// <returns>True if the event is handled, otherwise false.</returns>
         public static bool Handle(IntPtr wParam, IntPtr lParam, int keyCode)
         {
             // If this key was sent by us, we don't want to handle it again.
@@ -79,7 +92,7 @@ namespace KeyMorf
                 }
             }
 
-            // Only thing to do on key up is untoggle any layers associated with the key.
+            // Only thing to do on key up is untoggle any layers or cancel any pending toggles associated with the key.
             if (wParam == Win32.WM_KEYUP && isToggleKey)
             {
                 if (layer!.Toggled)
@@ -96,7 +109,7 @@ namespace KeyMorf
                     Logger.Debug($"Layer {layer.Name} toggle cancelled.");
 
                     // If the toggle was pending but was cancelled, release the toggle key as a key press.
-                    Keyboard.Press(layer.ToggleKey);
+                    Keyboard.SendKey(layer.ToggleKey);
                     return true;
                 }
             }

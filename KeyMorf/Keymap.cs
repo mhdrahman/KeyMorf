@@ -6,12 +6,24 @@ using System.Linq;
 
 namespace KeyMorf
 {
-    public static class Keymap
+    /// <summary>
+    /// Contains the keymap, handles the loading of the keymap from config.
+    /// </summary>
+    internal static class Keymap
     {
+        /// <summary>
+        /// Path to the keymap configuration file, which contains user-defined key mappings and macros.
+        /// </summary>
         private const string KeymapFilePath = "Keymap.json";
 
+        /// <summary>
+        /// Mapping of toggle key (<see cref="Keys"/>) to its associated <see cref="Layer"/>.
+        /// </summary>
         public static Dictionary<Keys, Layer> Layers { get; } = new();
 
+        /// <summary>
+        /// Static constructor which loads the user config file and parses it into <see cref="Layers"/>.
+        /// </summary>
 #pragma warning disable S3963 // "static" fields should be initialized inline - inlining the initialisation of Layers would be weird...
         static Keymap()
 #pragma warning restore S3963 // "static" fields should be initialized inline
@@ -45,93 +57,6 @@ namespace KeyMorf
             catch (Exception ex)
             {
                 Logger.Error($"Failed to initialise the keymap. Error: {ex}");
-            }
-        }
-    }
-
-    public class Layer
-    {
-        public string Name { get; set; }
-
-        public Keys ToggleKey { get; }
-
-        public int ToggleTimeMs { get; }
-
-        public bool Toggled { get; set; }
-
-        public bool TogglePending { get; set; }
-
-        public Dictionary<Keys, (Keys Key, Keys[]? Mods)> Mappings { get; }
-
-        public Dictionary<Keys, (Keys Key, Keys[]? Mods)[]> Macros { get; }
-
-        public Layer(string name, Keys toggleKey, int toggleTimeMs, Dictionary<Keys, (Keys Key, Keys[]? Mods)> mappings, Dictionary<Keys, (Keys Key, Keys[]? Mods)[]> macros)
-        {
-            Name = name;
-            ToggleKey = toggleKey;
-            ToggleTimeMs = toggleTimeMs;
-            Mappings = mappings;
-            Macros = macros;
-        }
-    }
-
-    public class UserKeymap
-    {
-        public Keys ToggleKey { get; }
-
-        public int ToggleTimeMs { get; }
-
-        public UserMapping[] Mappings { get; }
-
-        public UserMacro[] Macros { get; }
-
-        public UserKeymap(Keys toggleKey, int toggleTimeMs, UserMapping[] mappings, UserMacro[] macros)
-        {
-            ToggleKey = toggleKey;
-            ToggleTimeMs = toggleTimeMs;
-            Mappings = mappings;
-            Macros = macros;
-        }
-
-        public class UserMapping
-        {
-            public Keys From { get; }
-
-            public Keys To { get; }
-
-            public Keys[]? Mods { get; }
-
-            public UserMapping(Keys from, Keys to, Keys[]? mods)
-            {
-                From = from;
-                To = to;
-                Mods = mods;
-            }
-        }
-
-        public class UserMacro
-        {
-            public Keys ToggleKey { get; }
-
-            public UserMacroKey[] Macro { get; }
-
-            public UserMacro(Keys toggleKey, UserMacroKey[] macro)
-            {
-                ToggleKey = toggleKey;
-                Macro = macro;
-            }
-
-            public class UserMacroKey
-            {
-                public Keys Key { get; }
-
-                public Keys[]? Mods { get; }
-
-                public UserMacroKey(Keys key, Keys[]? mods)
-                {
-                    Key = key;
-                    Mods = mods;
-                }
             }
         }
     }

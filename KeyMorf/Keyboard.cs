@@ -1,13 +1,15 @@
 ﻿namespace KeyMorf
 {
-    public static class Keyboard
+    /// <summary>
+    /// Class containing logic for interacting with the keyboard, i.e. sending key presses.
+    /// </summary>
+    internal static class Keyboard
     {
-        public static void Press(Keys key)
-            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYDOWN, 0);
-
-        public static void Release(Keys key)
-            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYUP, 0);
-
+        /// <summary>
+        /// Press and release the <paramref name="key"/> along with any modifiers in <paramref name="mods"/>.
+        /// </summary>
+        /// <param name="key">The key to pressed and released.</param>
+        /// <param name="mods">Any modifier keys to be pressed with the <paramref name="key"/>.</param>
         public static void SendKey(Keys key, params Keys[] mods)
         {
             foreach (var mod in mods)
@@ -23,9 +25,26 @@
                 Release(mod);
             }
         }
+
+        /// <summary>
+        /// Press the <paramref name="key"/> down.
+        /// </summary>
+        /// <param name="key">The <see cref="Keys"/> to be pressed.</param>
+        private static void Press(Keys key)
+            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYDOWN, 0);
+
+        /// <summary>
+        /// Release the <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key">The <see cref="Keys"/> to be released.</param>
+        private static void Release(Keys key)
+            => Win32.keybd_event((byte)key, 0, Win32.KEYEVENTF_KEYUP, 0);
     }
 
-    public enum Keys
+    /// <summary>
+    /// Enum containing keycodes for various keys - not exhaustive, just has the keys I needed.
+    /// </summary>
+    internal enum Keys
     {
         // Numbers
         Zero = 48,
