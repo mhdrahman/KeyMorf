@@ -67,6 +67,25 @@
         "To": "Right"
       }
     ],
-    "Macros": []
+    "Macros": [
+      {
+        "ToggleKey": "Up",
+        "Macro": [
+          { "Key": "H", "Mods": [ "LShift" ] },
+          { "Key": "E" },
+          { "Key": "L" },
+          { "Key": "L" },
+          { "Key": "O" },
+          { "Key": "Comma" },
+          { "Key": "Space" },
+          { "Key": "W", "Mods": [ "RShift" ] },
+          { "Key": "O" },
+          { "Key": "R" },
+          { "Key": "L" },
+          { "Key": "D" },
+          { "Key": "One", "Mods": [ "RShift" ] }
+        ]
+      }
+    ]
   }
 }

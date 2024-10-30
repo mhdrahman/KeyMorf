@@ -26,17 +26,18 @@ namespace KeyMorf
                     Logger.Error($"Deserialising '{KeymapFilePath}' returned a null value");
                 }
 
-                // Convert the config (designed to be easy to read into a structure that's easy to interact with).
                 foreach (var kvp in config!)
                 {
                     var layerName = kvp.Key;
                     var userKeymap = kvp.Value;
 
+                    // TODO: Not sure how I feel about this nasty LINQ statement, might be better to just use those User-x classes here instead of mapping...
                     var layer = new Layer(
                         layerName,
                         userKeymap.ToggleKey,
                         userKeymap.ToggleTimeMs,
-                        userKeymap.Mappings.ToDictionary(userMapping => userMapping.From, userMapping => (userMapping.To, userMapping.Mods)));
+                        userKeymap.Mappings.ToDictionary(userMapping => userMapping.From, userMapping => (userMapping.To, userMapping.Mods)),
+                        userKeymap.Macros.ToDictionary(userMacro => userMacro.ToggleKey, userMacro => userMacro.Macro.Select(userMacroKey => (userMacroKey.Key, userMacroKey.Mods)).ToArray()));
 
                     Layers[layer.ToggleKey] = layer;
                 }
@@ -62,12 +63,15 @@ namespace KeyMorf
 
         public Dictionary<Keys, (Keys Key, Keys[]? Mods)> Mappings { get; }
 
-        public Layer(string name, Keys toggleKey, int toggleTimeMs, Dictionary<Keys, (Keys Key, Keys[]? Mods)> mappings)
+        public Dictionary<Keys, (Keys Key, Keys[]? Mods)[]> Macros { get; }
+
+        public Layer(string name, Keys toggleKey, int toggleTimeMs, Dictionary<Keys, (Keys Key, Keys[]? Mods)> mappings, Dictionary<Keys, (Keys Key, Keys[]? Mods)[]> macros)
         {
             Name = name;
             ToggleKey = toggleKey;
             ToggleTimeMs = toggleTimeMs;
             Mappings = mappings;
+            Macros = macros;
         }
     }
 
@@ -79,11 +83,14 @@ namespace KeyMorf
 
         public UserMapping[] Mappings { get; }
 
-        public UserKeymap(Keys toggleKey, int toggleTimeMs, UserMapping[] mappings)
+        public UserMacro[] Macros { get; }
+
+        public UserKeymap(Keys toggleKey, int toggleTimeMs, UserMapping[] mappings, UserMacro[] macros)
         {
             ToggleKey = toggleKey;
             ToggleTimeMs = toggleTimeMs;
             Mappings = mappings;
+            Macros = macros;
         }
 
         public class UserMapping
@@ -99,6 +106,32 @@ namespace KeyMorf
                 From = from;
                 To = to;
                 Mods = mods;
+            }
+        }
+
+        public class UserMacro
+        {
+            public Keys ToggleKey { get; }
+
+            public UserMacroKey[] Macro { get; }
+
+            public UserMacro(Keys toggleKey, UserMacroKey[] macro)
+            {
+                ToggleKey = toggleKey;
+                Macro = macro;
+            }
+
+            public class UserMacroKey
+            {
+                public Keys Key { get; }
+
+                public Keys[]? Mods { get; }
+
+                public UserMacroKey(Keys key, Keys[]? mods)
+                {
+                    Key = key;
+                    Mods = mods;
+                }
             }
         }
     }

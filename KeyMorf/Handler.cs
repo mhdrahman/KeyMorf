@@ -18,7 +18,7 @@ namespace KeyMorf
             }
 
             var key = (Keys)keyCode;
-            var isToggleKey = Keymap.Layers.TryGetValue(key, out var layer); 
+            var isToggleKey = Keymap.Layers.TryGetValue(key, out var layer);
 
             if (wParam == Win32.WM_KEYDOWN)
             {
@@ -36,7 +36,7 @@ namespace KeyMorf
                             {
                                 layer.TogglePending = false;
                                 layer.Toggled = true;
-                                
+
                                 _toggledLayer = layer;
 
                                 Logger.Debug($"Layer {layer.Name} toggled.");
@@ -66,7 +66,16 @@ namespace KeyMorf
                         return true;
                     }
 
-                    // TODO: If the key has a macro assigned, run it...
+                    // If the key has a macro assigned, run it.
+                    if (_toggledLayer.Macros.TryGetValue(key, out var macro))
+                    {
+                        foreach (var (Key, Mods) in macro)
+                        {
+                            Keyboard.SendKey(Key, Mods ?? Array.Empty<Keys>());
+                        }
+
+                        return true;
+                    }
                 }
             }
 
