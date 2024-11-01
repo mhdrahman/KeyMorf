@@ -32,56 +32,69 @@ namespace KeyMorf
         /// </summary>
         public static void Main()
         {
-            Logger.Level = LogLevel.Info;
-
-            Console.CancelKeyPress += (_, _) =>
+            try
             {
-                Logger.Info("KeyMorf is exiting...");
-                Logger.Info("Uninstalling keyboard hook...");
-                Win32.UnhookWindowsHookEx(_hookId);
+                Logger.Level = LogLevel.Info;
 
-                Logger.Info("Keyboard hook uninstalled.");
-                Environment.Exit(0);
-            };
+                Console.CancelKeyPress += (_, _) =>
+                {
+                    ExitApplication(0);
+                };
 
-            Logger.Info("KeyMorf is starting...");
-            Console.Title = "KeyMorf";
+                Logger.Info("KeyMorf is starting...");
+                Console.Title = "KeyMorf";
 
-            using var process = Process.GetCurrentProcess();
-            using var module = process.MainModule;
+                Keymap.Initialise();
 
-            if (module == null)
-            {
-                Logger.Error($"{nameof(module)} was null.");
+                using var process = Process.GetCurrentProcess();
+                using var module = process.MainModule;
+
+                if (module is null)
+                {
+                    Logger.Error($"{nameof(module)} was null.");
+                    ExitApplication(1);
+                }
+
+                if (module!.ModuleName is null)
+                {
+                    Logger.Error($"{nameof(module.ModuleName)} was null.");
+                    ExitApplication(1);
+                }
+
+                var moduleHandle = Win32.GetModuleHandle(module.ModuleName!);
+                if (moduleHandle == IntPtr.Zero)
+                {
+                    Logger.Error($"Failed to get module handle: {new Win32Exception(Marshal.GetLastWin32Error())}");
+                    ExitApplication(1);
+                }
+
+                Logger.Info("Installing keyboard hook...");
+                _hookId = Win32.SetWindowsHookEx(Win32.WH_KEYBOARD_LL, _hookInstance, Win32.GetModuleHandle(module.ModuleName!), 0);
+                if (_hookId == IntPtr.Zero)
+                {
+                    Logger.Error($"Failed to install hook: {new Win32Exception(Marshal.GetLastWin32Error())}");
+                    ExitApplication(1);
+                }
+
+                Logger.Info("Hook installed. KeyMorf is running. Press <C-c> to exit.");
+
+                // This is the message loop. It allows Windows to break into the thread and make the call back.
+                // GetMessage retrieves any messages on the current thread's message queue. As low-level
+                // hooks send messages instead of queueing them, GetMessage should never actually return.
+                var message = new Win32.Message();
+                while (Win32.GetMessage(ref message, IntPtr.Zero, 0, 0))
+                {
+                    Logger.Error($"Recieved a message unexpectedly: {message}. Exiting...");
+                    ExitApplication(1);
+                }
+
+                // This should never really happen.
+                ExitApplication(1);
             }
-
-            if (module!.ModuleName == null)
+            catch (Exception ex)
             {
-                Logger.Error($"{nameof(module.ModuleName)} was null.");
-            }
-
-            var moduleHandle = Win32.GetModuleHandle(module.ModuleName!);
-            if (moduleHandle == IntPtr.Zero)
-            {
-                Logger.Error($"Failed to get module handle: {new Win32Exception(Marshal.GetLastWin32Error())}");
-            }
-
-            Logger.Info("Installing keyboard hook...");
-            _hookId = Win32.SetWindowsHookEx(Win32.WH_KEYBOARD_LL, _hookInstance, Win32.GetModuleHandle(module.ModuleName!), 0);
-            if (_hookId == IntPtr.Zero)
-            {
-                Logger.Error($"Failed to install hook: {new Win32Exception(Marshal.GetLastWin32Error())}");
-            }
-
-            Logger.Info("Hook installed. KeyMorf is running. Press <C-c> to exit.");
-
-            // This is the message loop. It allows Windows to break into the thread and make the call back.
-            // GetMessage retrieves any messages on the current thread's message queue. As low-level
-            // hooks send messages instead of queueing them, GetMessage should never actually return.
-            var message = new Win32.Message();
-            while (Win32.GetMessage(ref message, IntPtr.Zero, 0, 0))
-            {
-                Logger.Error($"Recieved a message unexpectedly: {message}. Exiting...");
+                Logger.Error($"An unexpected error occurred. Error: {ex}.");
+                ExitApplication(1);
             }
         }
 
@@ -101,7 +114,7 @@ namespace KeyMorf
                 return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
             }
 
-            if (Handler.Handle(wParam, lParam, Marshal.ReadInt32(lParam)))
+            if (Handler.Handle(wParam, lParam, keyCode: Marshal.ReadInt32(lParam)))
             {
                 // This prevents the key from being handled by the next hook.
                 return KEY_HANDLED;
@@ -109,6 +122,25 @@ namespace KeyMorf
 
             // For any unhandled keys, let the key be processed as normal.
             return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        /// <summary>
+        /// Exits the application with the given <paramref name="exitCode"/>, uninstalls the hook if needed.
+        /// </summary>
+        /// <param name="exitCode">The exit code to exit the application with, defaults to zero.</param>
+        private static void ExitApplication(int exitCode = 0)
+        {
+            Logger.Info("KeyMorf is exiting...");
+
+            if (_hookId != IntPtr.Zero)
+            {
+                Logger.Info("Uninstalling keyboard hook...");
+                Win32.UnhookWindowsHookEx(_hookId);
+
+                Logger.Info("Keyboard hook uninstalled.");
+            }
+
+            Environment.Exit(exitCode);
         }
     }
 }

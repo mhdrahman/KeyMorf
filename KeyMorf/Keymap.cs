@@ -22,21 +22,14 @@ namespace KeyMorf
         public static Dictionary<Keys, Layer> Layers { get; } = new();
 
         /// <summary>
-        /// Static constructor which loads the user config file and parses it into <see cref="Layers"/>.
+        /// Static initialisation method which loads the user config file and parses it into <see cref="Layers"/>.
         /// </summary>
-#pragma warning disable S3963 // "static" fields should be initialized inline - inlining the initialisation of Layers would be weird...
-        static Keymap()
-#pragma warning restore S3963 // "static" fields should be initialized inline
+        public static void Initialise()
         {
             try
             {
                 var configJson = File.ReadAllText(KeymapFilePath);
-                var config = JsonConvert.DeserializeObject<Dictionary<string, UserKeymap>>(configJson);
-
-                if (config is null)
-                {
-                    Logger.Error($"Deserialising '{KeymapFilePath}' returned a null value");
-                }
+                var config = JsonConvert.DeserializeObject<Dictionary<string, UserKeymap>>(configJson) ?? throw new KeyMorfException($"Deserialising '{KeymapFilePath}' returned a null value.");
 
                 foreach (var kvp in config!)
                 {
@@ -57,6 +50,7 @@ namespace KeyMorf
             catch (Exception ex)
             {
                 Logger.Error($"Failed to initialise the keymap. Error: {ex}");
+                throw;
             }
         }
     }

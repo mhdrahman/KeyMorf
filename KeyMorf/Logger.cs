@@ -44,7 +44,7 @@ namespace KeyMorf
 
         /// <summary>
         /// Logs the [ERR] <paramref name="message"/> to the console if <see cref="Level"/>
-        /// is anything other than <see cref="LogLevel.None"/>. This exits the application!
+        /// is anything other than <see cref="LogLevel.None"/>.
         /// </summary>
         /// <param name="message">Error message to be logged.</param>
         public static void Error(string? message)
@@ -55,7 +55,6 @@ namespace KeyMorf
             }
 
             Console.WriteLine($"[ERR] {DateTime.Now:yyyy/MM/ddTHH:mm:ss:fff}: {message}");
-            Environment.Exit(1);
         }
     }
 
