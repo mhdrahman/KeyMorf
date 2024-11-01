@@ -17,8 +17,7 @@
 ## Getting Started
 
 ### Prerequisites
-- Windows OS
-- [.NET 6.0 SDK or higher](https://dotnet.microsoft.com/download) installed
+- [.NET 6.0 SDK or higher](https://dotnet.microsoft.com/download) installed.
 
 ### Configuration
 The `Keymap.json` file defines custom key mappings and macros for each toggleable layer. Each layer can specify:
