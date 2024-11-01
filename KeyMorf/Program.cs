@@ -16,7 +16,7 @@ namespace KeyMorf
         private static readonly IntPtr KEY_HANDLED = new(1);
 
         /// <summary>
-        /// Identifier for the installed hook. Used when calling <see cref="Win32.CallNextHookEx(IntPtr, int, IntPtr, IntPtr)"/> and when uninstalling the hook on application exit..
+        /// Identifier for the installed hook. Used when calling <see cref="Win32.CallNextHookEx(IntPtr, int, IntPtr, IntPtr)"/> and when uninstalling the hook on application exit.
         /// </summary>
         private static IntPtr _hookId = IntPtr.Zero;
 

@@ -40,9 +40,10 @@ namespace KeyMorf
                     // If there's no pending toggle and the layer is not already toggled, start the toggle timer.
                     if (!layer!.Toggled && !layer.TogglePending)
                     {
-                        Logger.Debug("Starting toggle timer.");
                         layer.TogglePending = true;
-                        new Timer(state =>
+
+                        Logger.Debug("Starting toggle timer.");
+                        _ = new Timer(state =>
                         {
                             Logger.Debug("Toggle timer ended.");
                             if (layer.TogglePending)
@@ -55,7 +56,7 @@ namespace KeyMorf
                                 Logger.Debug($"Layer {layer.Name} toggled.");
                             }
 
-                            // The timer is state.
+                            // The state is the timer in this case.
                             var timer = (Timer?)state;
                             if (timer is not null)
                             {
@@ -103,7 +104,8 @@ namespace KeyMorf
                     Logger.Debug($"Layer {layer.Name} untoggled.");
                     return true;
                 }
-                else if (layer.TogglePending)
+
+                if (layer.TogglePending)
                 {
                     layer.TogglePending = false;
                     Logger.Debug($"Layer {layer.Name} toggle cancelled.");
