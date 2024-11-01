@@ -1,11 +1,18 @@
 # KeyMorf
 **KeyMorf is a C# application designed to provide customizable key mapping and macro functionality on Windows which can be defined through a JSON configuration file.**
 
-**Built for personal use.**
+**This tool was built for personal use.**
 
 ## Table of Contents
+- [Features](#features)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
+
+## Features
+- **Layers**: Configurable keyboard layers.
+- **Mappings**: Key-to-key remappings within layers.
+- **Macros**: Multi-key macros triggered by specific keys within layers.
+- **Configuration**: JSON based configuration.
 
 ## Getting Started
 
